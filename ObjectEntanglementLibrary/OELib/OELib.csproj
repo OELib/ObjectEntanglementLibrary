@@ -40,6 +40,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="LibraryBase\ByteQuantaClient.cs" />
+    <Compile Include="LibraryBase\Connection.cs" />
+    <Compile Include="LibraryBase\GeneralActor.cs" />
+    <Compile Include="LibraryBase\ILogger.cs" />
+    <Compile Include="LibraryBase\Messages\Bye.cs" />
+    <Compile Include="LibraryBase\Messages\IControlMessage.cs" />
+    <Compile Include="LibraryBase\Messages\Message.cs" />
+    <Compile Include="LibraryBase\Messages\Ping.cs" />
+    <Compile Include="LibraryBase\Messages\Pong.cs" />
+    <Compile Include="LibraryBase\Messages\TraceableMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
