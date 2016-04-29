@@ -41,6 +41,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="LibraryBase\ByteQuantaClient.cs" />
+    <Compile Include="LibraryBase\ClientSideConnection.cs" />
+    <Compile Include="LibraryBase\CommunicationServer.cs" />
     <Compile Include="LibraryBase\Connection.cs" />
     <Compile Include="LibraryBase\GeneralActor.cs" />
     <Compile Include="LibraryBase\ILogger.cs" />
@@ -50,6 +52,7 @@
     <Compile Include="LibraryBase\Messages\Ping.cs" />
     <Compile Include="LibraryBase\Messages\Pong.cs" />
     <Compile Include="LibraryBase\Messages\TraceableMessage.cs" />
+    <Compile Include="LibraryBase\ServerSideConnection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
