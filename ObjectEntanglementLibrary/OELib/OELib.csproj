@@ -44,7 +44,7 @@
     <Compile Include="LibraryBase\ClientSideConnection.cs" />
     <Compile Include="LibraryBase\CommunicationServer.cs" />
     <Compile Include="LibraryBase\Connection.cs" />
-    <Compile Include="LibraryBase\GeneralActor.cs" />
+    <Compile Include="LibraryBase\Actor.cs" />
     <Compile Include="LibraryBase\ILogger.cs" />
     <Compile Include="LibraryBase\Messages\Bye.cs" />
     <Compile Include="LibraryBase\Messages\IControlMessage.cs" />

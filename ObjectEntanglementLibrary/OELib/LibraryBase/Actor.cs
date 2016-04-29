@@ -5,13 +5,13 @@ using System.Threading.Tasks;
 
 namespace OELib.LibraryBase
 {
-    public class GeneralActor : IDisposable
+    public class Actor : IDisposable
     {
         protected BlockingCollection<Action> _inbox = new BlockingCollection<Action>();
 
         protected readonly System.Threading.Thread _thread;
 
-        public GeneralActor(ThreadPriority priority = ThreadPriority.Normal)
+        public Actor(ThreadPriority priority = ThreadPriority.Normal)
         {
             _thread = new Thread(new ThreadStart(loop)) { IsBackground = true, Name = this.GetType().ToString(), Priority = priority };
             _thread.Start();

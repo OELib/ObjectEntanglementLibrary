@@ -28,8 +28,8 @@ namespace OELib.LibraryBase
         public TcpClient Client { get; protected set; }
 
         private bool _reading;
-        private GeneralActor sendActor = new GeneralActor();
-        private GeneralActor rcvActor = new GeneralActor();
+        private Actor sendActor = new Actor();
+        private Actor rcvActor = new Actor();
         protected int maxChunkSize = 10240;
         protected Thread readThread;
         private Connection _parent;

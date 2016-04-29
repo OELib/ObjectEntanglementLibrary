@@ -13,7 +13,7 @@ namespace OELib.LibraryBase
 
         private TcpListener _listener;
 
-        private GeneralActor _connectionManager { get; } = new GeneralActor();
+        private Actor _connectionManager { get; } = new Actor();
 
         protected List<T> _connections { get; } = new List<T>();
 
