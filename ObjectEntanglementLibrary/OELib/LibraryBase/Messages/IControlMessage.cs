@@ -1,6 +1,6 @@
 ﻿namespace OELib.LibraryBase.Messages
 {
-    interface IControlMessage
+    internal interface IControlMessage
     {
     }
 }

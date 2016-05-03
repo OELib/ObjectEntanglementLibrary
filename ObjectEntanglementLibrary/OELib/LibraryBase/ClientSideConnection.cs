@@ -9,7 +9,6 @@ namespace OELib.LibraryBase
         protected string remoteIP = "";
         protected int remotePort = 0;
 
-
         private static TcpClient makeTcpClient(IPEndPoint ep)
         {
             TcpClient cli = new TcpClient();
@@ -38,8 +37,5 @@ namespace OELib.LibraryBase
                 return false;
             }
         }
-
-
-
     }
 }

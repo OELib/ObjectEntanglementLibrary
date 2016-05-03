@@ -2,7 +2,6 @@
 
 using OELib.LibraryBase.Messages;
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Net.Sockets;
 using System.Reflection;
@@ -37,9 +36,11 @@ namespace OELib.LibraryBase
         }
 
         public event EventHandler<Message> MessageRecieved;
+
         private event EventHandler<IControlMessage> controlMessageReceived;
 
         public event EventHandler<Exception> Stopped;
+
         public event EventHandler Started;
 
         public Connection(ILogger logger = null) //TODO: Complete ILog pattern to suit everyone's need
@@ -52,7 +53,6 @@ namespace OELib.LibraryBase
             _pingTimer.Elapsed += pingTimerElapsed;
             controlMessageReceived += controlMessageIn;
         }
-
 
         protected bool Start(TcpClient client)
         {
@@ -87,7 +87,6 @@ namespace OELib.LibraryBase
 
         private void controlMessageIn(object sender, IControlMessage message)
         {
-
             if (message is Ping)
             {
 #if (DEBUGOUTPUT)
@@ -153,6 +152,7 @@ namespace OELib.LibraryBase
             _pingAutoReset.Set(); // sometimes there is so much data that ping cant get trough. could get fixed with priority message
             resetPingTimer();
         }
+
         private void resetPingTimer()
         {
             _pingTimer.Stop();
@@ -204,7 +204,5 @@ namespace OELib.LibraryBase
         {
             return await Task<TraceableMessage>.Factory.StartNew(() => { return Ask(message, timeout); });
         }
-
-
     }
 }

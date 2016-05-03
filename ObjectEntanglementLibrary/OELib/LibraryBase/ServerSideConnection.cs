@@ -5,6 +5,7 @@ namespace OELib.LibraryBase
     public class ServerSideConnection : Connection
     {
         private static int connectionNo = 0;
+
         public ServerSideConnection(TcpClient client)
             : this()
         {
@@ -16,6 +17,5 @@ namespace OELib.LibraryBase
             Name = $"Srv. conn. {connectionNo++}";
             PingInterval = 7000;
         }
-
     }
 }

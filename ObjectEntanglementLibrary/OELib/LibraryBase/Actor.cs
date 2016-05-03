@@ -17,7 +17,7 @@ namespace OELib.LibraryBase
             _thread.Start();
         }
 
-        void loop()
+        private void loop()
         {
             foreach (Action action in _inbox.GetConsumingEnumerable()) action();
         }

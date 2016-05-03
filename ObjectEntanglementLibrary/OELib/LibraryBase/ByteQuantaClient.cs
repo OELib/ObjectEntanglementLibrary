@@ -1,12 +1,8 @@
 ﻿#define _DEBUGOUTPUT
 
-
 using System;
-using System.Diagnostics;
 using System.Net.Sockets;
 using System.Threading;
-
-
 
 namespace OELib.LibraryBase
 {
@@ -18,9 +14,11 @@ namespace OELib.LibraryBase
         public string Name { get; set; }
 
         public event EventHandler<int> PartialDataRead;
+
         public event EventHandler<byte[]> QuantaReceived;
 
         public event EventHandler<Exception> Stopped;
+
         public event EventHandler Started;
 
         public bool IsReady => _reading && Client.Client != null && Client.Connected;
@@ -88,7 +86,6 @@ namespace OELib.LibraryBase
                                 Debug.WriteLine("Waiting for header.");
 #endif
                             }
-
                         } while (_reading && read < 4);
                         packageSize = BitConverter.ToInt32(sizeBuffer, 0);
 #if (DEBUGOUTPUT)
@@ -173,6 +170,5 @@ namespace OELib.LibraryBase
         }
 
         public override string ToString() => $"Byte quanta client {Name}";
-
     }
 }

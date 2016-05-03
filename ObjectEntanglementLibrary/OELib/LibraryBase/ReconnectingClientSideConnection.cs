@@ -1,15 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Timers;
 
 namespace OELib.LibraryBase
 {
     public class ReconnectingClientSideConnection : ClientSideConnection
     {
-        Timer _reconnectTimer = new Timer(500);
+        private Timer _reconnectTimer = new Timer(500);
+
         public event EventHandler Restarting;
 
         public bool EnableRestart { get; set; } = true;
@@ -17,7 +14,7 @@ namespace OELib.LibraryBase
         public double ReconnectionInterval { get { return _reconnectTimer.Interval; } set { _reconnectTimer.Interval = value; } }
 
         public ReconnectingClientSideConnection()
-            :base()
+            : base()
         {
             _reconnectTimer.Elapsed += _reconnectTimer_Elapsed;
             Stopped += StartReconnectingTimer;
@@ -43,6 +40,5 @@ namespace OELib.LibraryBase
             if (!ok) StartReconnectingTimer(this, new Exception("Start failed"));
             return ok;
         }
-
     }
 }
