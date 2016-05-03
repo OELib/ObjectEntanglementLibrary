@@ -1,5 +1,4 @@
-﻿
-using OELib.LibraryBase.Messages;
+﻿using OELib.LibraryBase.Messages;
 using System;
 
 namespace OELib.PokingConnection.Messages

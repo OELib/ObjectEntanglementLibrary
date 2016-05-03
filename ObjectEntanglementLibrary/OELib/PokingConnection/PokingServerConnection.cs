@@ -7,7 +7,7 @@ namespace OELib.PokingConnection
     public class PokingServerConnection : ServerSideConnection, IPokingConnection
     {
         public Reactor Reactor { get; protected set; }
-        
+
         public PokingServerConnection(TcpClient client, object reactingObject)
             : base()
         {
@@ -15,8 +15,5 @@ namespace OELib.PokingConnection
             if (Start(client)) Reactor.Start();
             else throw new Exception("Server connection failed.");
         }
-
-        
-
     }
 }

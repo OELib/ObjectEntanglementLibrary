@@ -56,14 +56,12 @@ namespace OELib.PokingConnection
 #endif
             remoteInspectionTask = _connection.AskAsync(new InspectRemoteObject());
 
-
             remoteInspectionTask.ContinueWith(res =>
             {
                 //todo: result is null if the other side does not respond. take care of that
                 _remoteReactingObjectInfo = (res.Result as RemoteObjectInspectionResult).ObjectInfo;
                 RemoteReactingInspectionComplete?.Invoke(this, _connection);
             });
-
         }
 
         private void _connection_MessageRecieved(object sender, Message mes)

@@ -8,11 +8,12 @@ namespace OELib.PokingConnection.Messages
     {
         public object Response { get; }
         public Exception Exception { get; }
+
         public CallMethodResponse(CallMethod callingMessage, object response, Exception exception)
             : base(callingMessage)
         {
             Response = response;
             Exception = exception;
-        }        
+        }
     }
 }
