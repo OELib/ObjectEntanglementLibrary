@@ -52,7 +52,20 @@
     <Compile Include="LibraryBase\Messages\Ping.cs" />
     <Compile Include="LibraryBase\Messages\Pong.cs" />
     <Compile Include="LibraryBase\Messages\TraceableMessage.cs" />
+    <Compile Include="LibraryBase\ReconnectingClientSideConnection.cs" />
     <Compile Include="LibraryBase\ServerSideConnection.cs" />
+    <Compile Include="PokingConnection\Messages\CallMethod.cs" />
+    <Compile Include="PokingConnection\Messages\CallMethodResponse.cs" />
+    <Compile Include="PokingConnection\Messages\InspectRemoteObject.cs" />
+    <Compile Include="PokingConnection\IPokingConnection.cs" />
+    <Compile Include="PokingConnection\NullResponseException.cs" />
+    <Compile Include="PokingConnection\ObjectInfo.cs" />
+    <Compile Include="PokingConnection\PokingClientConnection.cs" />
+    <Compile Include="PokingConnection\PokingServer.cs" />
+    <Compile Include="PokingConnection\PokingServerConnection.cs" />
+    <Compile Include="PokingConnection\Reactor.cs" />
+    <Compile Include="PokingConnection\RemoteException.cs" />
+    <Compile Include="PokingConnection\Messages\RemoteObjectInspectionResult.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
