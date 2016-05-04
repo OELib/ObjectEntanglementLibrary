@@ -2,7 +2,7 @@
 using System;
 using System.Net;
 
-namespace OELib.LibraryBase.ObjectTunnel
+namespace OELib.PokingConnection.ObjectTunnel
 {
     public class ObjectTunnelClient
     {
