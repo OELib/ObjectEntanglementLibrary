@@ -1,2 +1,2 @@
 # ObjectEntanglementLibrary
-RPC with a twist
+Simple RPC library
