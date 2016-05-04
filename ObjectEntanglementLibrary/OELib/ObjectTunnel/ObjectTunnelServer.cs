@@ -1,7 +1,7 @@
 ﻿using OELib.PokingConnection;
 using System;
 
-namespace LOELib.PokingConnection.ObjectTunnel
+namespace OELib.PokingConnection.ObjectTunnel
 {
     public class ObjectTunnelServer
     {
