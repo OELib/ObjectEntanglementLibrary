@@ -7,7 +7,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OELib", "OELib\OELib.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OELibTests", "OELibTests\OELibTests.csproj", "{B66BFF08-13AE-4B87-9AE2-68D95DD7C316}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OELibExamples", "OELibExamples\OELibExamples.csproj", "{34058630-7378-4BCF-9A2F-29211023C0AE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OELibExamples", "Examples\OELibExamples\OELibExamples.csproj", "{34058630-7378-4BCF-9A2F-29211023C0AE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{A3344C66-3CE7-4732-BA9E-890C8306C06B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -30,5 +32,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{34058630-7378-4BCF-9A2F-29211023C0AE} = {A3344C66-3CE7-4732-BA9E-890C8306C06B}
 	EndGlobalSection
 EndGlobal

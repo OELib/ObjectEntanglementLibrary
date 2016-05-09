@@ -235,3 +235,4 @@ _Pvt_Extensions
 # FAKE - F# Make
 .fake/
 /ObjectEntanglementLibrary/OELib.NugetPackage/OELib.0.0.3-beta.nupkg.bak
+*.bak
