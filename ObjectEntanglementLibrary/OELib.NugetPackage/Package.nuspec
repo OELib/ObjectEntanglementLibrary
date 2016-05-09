@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>OELib</id>
-    <version>0.0.2</version>
+    <version>0.0.3-beta</version>
     <title>OELib</title>
     <authors>Erik Andersson, Dean Durbic</authors>
     <owners></owners>
