@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>OELib</id>
+    <version>0.0.2</version>
+    <title>OELib</title>
+    <authors>Erik Andersson, Dean Durbic</authors>
+    <owners></owners>
+    <description>
+      Object Entanglement Library is a communication platform that simplifies communication between .Net application.
+    </description>
+    <releaseNotes>
+    </releaseNotes>
+    <summary>
+       Object Entanglement Library
+    </summary>
+    <language>en-US</language>
+    <projectUrl>https://nuget.org/packages/OELib.NugetPackage</projectUrl>
+    <iconUrl>https://nuget.org/Content/Images/packageDefaultIcon-50x50.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <licenseUrl>https://opensource.org/licenses/MIT</licenseUrl>
+    <copyright>Copyright  2016</copyright>
+    <dependencies>
+    </dependencies>
+    <references></references>
+    <tags></tags>
+   </metadata>
+  <files>
+    <file src="bin\release\OELib.dll" target="lib\net452\" />
+  </files>
+</package>
