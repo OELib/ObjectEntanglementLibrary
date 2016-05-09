@@ -7,7 +7,7 @@
     <authors>Erik Andersson, Dean Durbic</authors>
     <owners></owners>
     <description>
-      Object Entanglement Library is a communication platform that simplifies communication between .Net application.
+      Object Entanglement Library is a communication platform for simple method calls and property set/get between .Net applications.
     </description>
     <releaseNotes>
     </releaseNotes>
@@ -15,11 +15,11 @@
        Object Entanglement Library
     </summary>
     <language>en-US</language>
-    <projectUrl>https://nuget.org/packages/OELib.NugetPackage</projectUrl>
+    <projectUrl>https://github.com/OELib/ObjectEntanglementLibrary</projectUrl>
     <iconUrl>https://nuget.org/Content/Images/packageDefaultIcon-50x50.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://opensource.org/licenses/MIT</licenseUrl>
-    <copyright>Copyright  2016</copyright>
+    <copyright>Copyright 2016</copyright>
     <dependencies>
     </dependencies>
     <references></references>
