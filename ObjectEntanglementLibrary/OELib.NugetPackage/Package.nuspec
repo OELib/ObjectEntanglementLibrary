@@ -26,6 +26,6 @@
     <tags></tags>
    </metadata>
   <files>
-    <file src="bin\release\OELib.dll" target="lib\net45\" />
+    <file src="bin\release\OELib.dll" target="lib\net452\" />
   </files>
 </package>
