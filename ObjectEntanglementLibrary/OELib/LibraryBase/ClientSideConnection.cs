@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Sockets;
+using System.Runtime.Serialization;
 
 namespace OELib.LibraryBase
 {
@@ -16,8 +17,8 @@ namespace OELib.LibraryBase
             return cli;
         }
 
-        public ClientSideConnection()
-            : base()
+        public ClientSideConnection(IFormatter customFormatter = null)
+            : base(customFormatter)
         {
             Name = $"Cli. Conn. {connectionNo++}";
             PingInterval = 5000;

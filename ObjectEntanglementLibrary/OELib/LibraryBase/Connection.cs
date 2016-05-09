@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Net.Sockets;
 using System.Reflection;
+using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,7 +18,9 @@ namespace OELib.LibraryBase
         private ILogger _logger;
 
         private ByteQuantaClient byteClient;
-        private BinaryFormatter bformatter = new BinaryFormatter();
+
+        private IFormatter _formatter;
+
         private System.Timers.Timer _pingTimer = new System.Timers.Timer(60000);
         private AutoResetEvent _pingAutoReset = new AutoResetEvent(false);
         public double PingInterval { get { return _pingTimer.Interval; } set { _pingTimer.Interval = value; } }
@@ -43,8 +46,9 @@ namespace OELib.LibraryBase
 
         public event EventHandler Started;
 
-        public Connection(ILogger logger = null) //TODO: Complete ILog pattern to suit everyone's need
+        public Connection(IFormatter serializer = null, ILogger logger = null) //TODO: Complete ILog pattern to suit everyone's need
         {
+            _formatter = serializer == null ? new BinaryFormatter() : serializer;
             _logger = logger;
             byteClient = new ByteQuantaClient(this);
             byteClient.PartialDataRead += readActivity;
@@ -133,7 +137,7 @@ namespace OELib.LibraryBase
             Message message = null;
             try
             {
-                message = bformatter.Deserialize(ms) as Message;
+                message = _formatter.Deserialize(ms) as Message;
             }
             catch (TargetInvocationException e)
             {
@@ -162,9 +166,8 @@ namespace OELib.LibraryBase
         public virtual bool SendMessage(Message message)
         {
             if (!byteClient.IsReady) return false;
-            BinaryFormatter _bformatter = new BinaryFormatter();
             MemoryStream _ms = new MemoryStream();
-            _bformatter.Serialize(_ms, message);
+            _formatter.Serialize(_ms, message);
             int length = (int)_ms.Position;
             _ms.Seek(0, SeekOrigin.Begin);
             byte[] buffer = new byte[length];
