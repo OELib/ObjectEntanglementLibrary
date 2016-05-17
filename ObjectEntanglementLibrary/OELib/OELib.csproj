@@ -61,6 +61,10 @@
     <Compile Include="LibraryBase\PriorityQueue.cs" />
     <Compile Include="LibraryBase\ReconnectingClientSideConnection.cs" />
     <Compile Include="LibraryBase\ServerSideConnection.cs" />
+    <Compile Include="ObjectEntanglement\EntangledClientConnection.cs" />
+    <Compile Include="ObjectEntanglement\EntangledObjectFactory.cs" />
+    <Compile Include="ObjectEntanglement\EntangledServer.cs" />
+    <Compile Include="ObjectEntanglement\EntangledServerConnection.cs" />
     <Compile Include="ObjectTunnel\ObjectTunnelClient.cs" />
     <Compile Include="ObjectTunnel\ObjectTunnelServer.cs" />
     <Compile Include="PokingConnection\Messages\CallMethod.cs" />

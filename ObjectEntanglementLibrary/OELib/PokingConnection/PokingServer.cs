@@ -6,7 +6,7 @@ namespace OELib.PokingConnection
 {
     public class PokingServer : CommunicationServer<PokingServerConnection>
     {
-        private object _reactingObject { get; }
+        protected object _reactingObject { get; }
 
         public PokingServer(int port, object reactingObject)
             : base(new IPEndPoint(IPAddress.Any, port))
