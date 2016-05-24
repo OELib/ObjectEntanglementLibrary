@@ -11,8 +11,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OELibExamples", "Examples\O
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{A3344C66-3CE7-4732-BA9E-890C8306C06B}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{A3344C66-3CE7-4732-BA9E-890C8306C06B}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SimpleClientServer", "SimpleClientServer", "{55752C3E-0616-4FCF-8297-1A304D0E4E0B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleExampleServer", "Examples\SimpleClientServer\SimpleExampleServer\SimpleExampleServer.csproj", "{5D89A513-290E-49C8-9A95-4980381D6AAE}"
