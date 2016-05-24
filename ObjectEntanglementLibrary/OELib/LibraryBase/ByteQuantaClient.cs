@@ -1,7 +1,10 @@
 ﻿#define _DEBUGOUTPUT
 
 using System;
+using System.IO;
+using System.IO.Compression;
 using System.Net.Sockets;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading;
 
 namespace OELib.LibraryBase
@@ -134,11 +137,15 @@ namespace OELib.LibraryBase
             bool ok = false;
             bool ok2 = sendActor.PostWait(() =>
             {
-                int length = data.Length;
-                byte[] header = BitConverter.GetBytes(length);
+                byte[] compressedPacket =/* data;// */ GZipper.Zip(data);
+
+                int length = compressedPacket.Length;
+
                 byte[] packet = new byte[length + 4];
+                byte[] header = BitConverter.GetBytes(length);
+
                 Array.Copy(header, 0, packet, 0, 4);
-                Array.Copy(data, 0, packet, 4, length);
+                Array.Copy(compressedPacket, 0, packet, 4, length);
                 int sent = 0;
                 try
                 {

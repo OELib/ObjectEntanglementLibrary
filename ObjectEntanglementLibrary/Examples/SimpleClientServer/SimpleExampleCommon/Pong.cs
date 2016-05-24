@@ -9,5 +9,6 @@ namespace SimpleExampleCommon
     [Serializable]
     public class Pong
     {
+        public byte[] Data { get; set; } = new byte[100000000];
     }
 }

@@ -131,8 +131,11 @@ namespace OELib.LibraryBase
         protected virtual void quantaReceived(object sender, byte[] data)
         {
             if (data.Length == 0) return;
+
+            var uncompressedData = GZipper.Unzip(data);
+
             MemoryStream ms = new MemoryStream();
-            ms.Write(data, 0, data.Length);
+            ms.Write(uncompressedData, 0, uncompressedData.Length);
             ms.Seek(0, SeekOrigin.Begin);
             Message message = null;
             try
