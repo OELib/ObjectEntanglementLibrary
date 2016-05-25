@@ -17,8 +17,8 @@ namespace OELib.LibraryBase
             return cli;
         }
 
-        public ClientSideConnection(IFormatter customFormatter = null)
-            : base(customFormatter)
+        public ClientSideConnection(IFormatter customFormatter = null, ILogger logger = null, bool useCompression = false)
+            : base(customFormatter, logger, useCompression)
         {
             Name = $"Cli. Conn. {connectionNo++}";
             PingInterval = 5000;

@@ -7,14 +7,14 @@ namespace OELib.LibraryBase
     {
         private static int connectionNo = 0;
 
-        public ServerSideConnection(TcpClient client, IFormatter customFormatter = null)
-            : this(customFormatter)
+        public ServerSideConnection(TcpClient client, IFormatter customFormatter = null, ILogger logger = null, bool useCompression = false)
+            : this(customFormatter, logger, useCompression)
         {
             Start(client);
         }
 
-        protected ServerSideConnection(IFormatter customFormatter = null) // in case we need to do something else in constructor before starting the Connection, so if you use this ctor, you must start manually.
-            : base(customFormatter)
+        protected ServerSideConnection(IFormatter customFormatter = null, ILogger logger = null, bool useCompression = false) // in case we need to do something else in constructor before starting the Connection, so if you use this ctor, you must start manually.
+            : base(customFormatter, logger, useCompression)
         {
             Name = $"Srv. conn. {connectionNo++}";
             PingInterval = 7000;

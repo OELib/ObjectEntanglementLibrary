@@ -1,10 +1,8 @@
 ﻿#define _DEBUGOUTPUT
 
+using OELib.LibraryBase.Messages;
 using System;
-using System.IO;
-using System.IO.Compression;
 using System.Net.Sockets;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading;
 
 namespace OELib.LibraryBase
@@ -15,6 +13,8 @@ namespace OELib.LibraryBase
     public class ByteQuantaClient
     {
         public string Name { get; set; }
+
+        public bool UseCompression { get; }
 
         public event EventHandler<int> PartialDataRead;
 
@@ -37,9 +37,10 @@ namespace OELib.LibraryBase
         private bool _disconnectEventSent = true;
         private int _zeroReadLimit = 10;
 
-        public ByteQuantaClient(Connection parent)
+        public ByteQuantaClient(Connection parent, bool useCompression = false)
         {
             _parent = parent;
+            UseCompression = useCompression;
         }
 
         public bool Start(TcpClient client)
@@ -69,15 +70,18 @@ namespace OELib.LibraryBase
                     try
                     {
                         int packageSize;
-                        byte[] sizeBuffer = new byte[4];
+
+                        var headerSize = MessageHeader.HeaderSize;
+
+                        byte[] headerBuffer = new byte[headerSize];
                         int read = 0;
                         do
                         {
                             try
                             {
-                                read = Client.Client.Receive(sizeBuffer, 4, SocketFlags.None);
+                                read = Client.Client.Receive(headerBuffer, headerSize, SocketFlags.None);
                                 if (read == 0) throw new Exception("Error reading header. (Probably a graceful shutdown.)");
-                                if (read != 4) throw new Exception($"Error reading header. (Not enough data in header - required 4 bytes, got {read} bytes.)");
+                                if (read != headerSize) throw new Exception($"Error reading header. (Not enough data in header - required {headerSize} bytes, got {read} bytes.)");
 #if (DEBUGOUTPUT)
                                 Debug.WriteLine($"Read header {read}");
 #endif
@@ -89,8 +93,10 @@ namespace OELib.LibraryBase
                                 Debug.WriteLine("Waiting for header.");
 #endif
                             }
-                        } while (_reading && read < 4);
-                        packageSize = BitConverter.ToInt32(sizeBuffer, 0);
+                        } while (_reading && read < headerSize);
+
+                        var messageHeader = StructMarshaller.FromByteArray<MessageHeader>(headerBuffer);
+                        packageSize = messageHeader.Length;
 #if (DEBUGOUTPUT)
                         Debug.WriteLine($"Getting package size {packageSize}");
 #endif
@@ -114,7 +120,10 @@ namespace OELib.LibraryBase
                             position += read;
                             PartialDataRead?.Invoke(this, read);
                         }
-                        rcvActor.Post(() => QuantaReceived?.Invoke(this, data));
+
+                        var uncompressedData = messageHeader.DataIsCompressed ? GZipper.Unzip(data) : data;
+
+                        rcvActor.Post(() => QuantaReceived?.Invoke(this, uncompressedData));
                     }
                     catch (Exception ex)
                     {
@@ -137,25 +146,25 @@ namespace OELib.LibraryBase
             bool ok = false;
             bool ok2 = sendActor.PostWait(() =>
             {
-                byte[] compressedPacket =/* data;// */ GZipper.Zip(data);
+                byte[] compressedPacket = UseCompression ? GZipper.Zip(data) : data;
 
                 int length = compressedPacket.Length;
 
-                byte[] packet = new byte[length + 4];
-                byte[] header = BitConverter.GetBytes(length);
+                byte[] header = StructMarshaller.ToByteArray(new MessageHeader() { Length = length, DataIsCompressed = UseCompression });
+                byte[] packet = new byte[length + header.Length];
 
-                Array.Copy(header, 0, packet, 0, 4);
-                Array.Copy(compressedPacket, 0, packet, 4, length);
+                Array.Copy(header, 0, packet, 0, header.Length);
+                Array.Copy(compressedPacket, 0, packet, header.Length, length);
                 int sent = 0;
                 try
                 {
-                    sent = Client.Client.Send(packet, length + 4, SocketFlags.None);
+                    sent = Client.Client.Send(packet, length + header.Length, SocketFlags.None);
                 }
                 catch (Exception ex)
                 {
                     Stop(ex);
                 }
-                ok = (sent == length + 4);
+                ok = (sent == length + header.Length);
             });
             return (ok && ok2);
         }

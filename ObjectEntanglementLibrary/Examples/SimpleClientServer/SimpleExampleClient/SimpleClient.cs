@@ -32,10 +32,11 @@ namespace SimpleExampleClient
             // When the client and server have agreed on which methods are supported it is possible to send objects to the other part.
             _client.Reactor.RemoteReactingInspectionComplete += (s, e) =>
             {
-                Console.WriteLine("Connected to server. Sending test object...");
-                SendTestObjectToServer();
+                Console.WriteLine("Connected to server.");
+                //SendTestObjectToServer();
             };
         }
+
 
         /// <summary>
         /// Invokes the method "public void HandleTestObject(TestClass t)" on the server's reacting object
@@ -59,6 +60,18 @@ namespace SimpleExampleClient
                 Console.WriteLine("Received Pong after {0} ms", sw.ElapsedMilliseconds);
             else
                 Console.WriteLine("Did not receive Pong within timeout");
+        }
+
+
+        public void SendLargeObject()
+        {
+            Console.WriteLine("Sending a large object");
+            Stopwatch sw = Stopwatch.StartNew();
+            var reply = _client.Reactor.CallRemoteMethod("HandleLargeObject", new LargeObject()) as LargeObject;
+            if (reply != null)
+                Console.WriteLine("Received large object reply after {0} ms", sw.ElapsedMilliseconds);
+            else
+                Console.WriteLine("Did not receive large object within timeout");
         }
 
         /// <summary>

@@ -7,7 +7,8 @@ using System.Threading.Tasks;
 namespace SimpleExampleCommon
 {
     [Serializable]
-    public class Pong
+    public class LargeObject
     {
+        public byte[] Data { get; set; } = new byte[50000000];
     }
 }

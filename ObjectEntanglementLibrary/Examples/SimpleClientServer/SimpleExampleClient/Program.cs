@@ -12,12 +12,34 @@ namespace SimpleExampleClient
         {
             SimpleClient client = new SimpleClient("127.0.0.1", 8081);
 
-            Console.WriteLine("Client started. Press enter to send a Ping and wait for a Pong reply");
-            Console.ReadLine();
-            client.SendPing();
+            bool running = true;
+            while (running)
+            {
+                Console.WriteLine(
+$@"Client started. Select an action:
+Q:  Quit
+P:  Send a Ping and wait for a Pong reply.
+L:  Send a large object and wait for the server to return it.");
 
-            Console.WriteLine("Press enter to exit.");
-            Console.ReadLine();
+                ConsoleKeyInfo keyPressed = Console.ReadKey(true);
+
+                switch (keyPressed.Key)
+                {
+                    case ConsoleKey.Q:
+                        running = false;
+                        break;
+                    case ConsoleKey.P:
+                        client.SendPing();
+                        break;
+                    case ConsoleKey.L:
+                        client.SendLargeObject();
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            Console.WriteLine("Exiting...");
         }
     }
 }

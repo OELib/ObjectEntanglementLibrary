@@ -69,5 +69,15 @@ namespace SimpleExampleServer
             // Return a Pong to the calling client
             return new Pong();
         }
+
+        public LargeObject HandleLargeObject(LargeObject largeObject)
+        {
+            // A client invoked this method with a LargeObject
+            Console.WriteLine("Received LargeObject. Returning it to the sender");
+
+            // Return the LargeObject to the calling client
+            return largeObject;
+        }
+        
     }
 }

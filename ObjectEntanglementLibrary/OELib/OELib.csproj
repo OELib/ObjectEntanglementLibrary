@@ -53,6 +53,7 @@
     <Compile Include="LibraryBase\Messages\Bye.cs" />
     <Compile Include="LibraryBase\Messages\IControlMessage.cs" />
     <Compile Include="LibraryBase\Messages\Message.cs" />
+    <Compile Include="LibraryBase\Messages\MessageHeader.cs" />
     <Compile Include="LibraryBase\Messages\Ping.cs" />
     <Compile Include="LibraryBase\Messages\Pong.cs" />
     <Compile Include="LibraryBase\Messages\TraceableMessage.cs" />
@@ -73,6 +74,7 @@
     <Compile Include="PokingConnection\RemoteException.cs" />
     <Compile Include="PokingConnection\Messages\RemoteObjectInspectionResult.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StructMarshaller.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -46,11 +46,11 @@ namespace OELib.LibraryBase
 
         public event EventHandler Started;
 
-        public Connection(IFormatter serializer = null, ILogger logger = null) //TODO: Complete ILog pattern to suit everyone's need
+        public Connection(IFormatter serializer = null, ILogger logger = null, bool useCompression = false) //TODO: Complete ILog pattern to suit everyone's need
         {
             _formatter = serializer == null ? new BinaryFormatter() : serializer;
             _logger = logger;
-            byteClient = new ByteQuantaClient(this);
+            byteClient = new ByteQuantaClient(this, useCompression);
             byteClient.PartialDataRead += readActivity;
             byteClient.QuantaReceived += quantaReceived;
             byteClient.Stopped += (s, ex) => Stop(ex);
@@ -132,10 +132,8 @@ namespace OELib.LibraryBase
         {
             if (data.Length == 0) return;
 
-            var uncompressedData = GZipper.Unzip(data);
-
             MemoryStream ms = new MemoryStream();
-            ms.Write(uncompressedData, 0, uncompressedData.Length);
+            ms.Write((byte[])data, 0, (int)data.Length);
             ms.Seek(0, SeekOrigin.Begin);
             Message message = null;
             try

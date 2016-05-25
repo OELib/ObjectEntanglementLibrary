@@ -12,15 +12,30 @@ namespace SimpleExampleServer
         {
             SimpleServer server = new SimpleServer(8081);
 
-            Console.WriteLine("Server started. Press enter to exit.");
+            bool running = true;
+            while (running)
+            {
+                Console.WriteLine(
+$@"Server started. Select an action:
+Q:  Quit
+B:  Broadcast a message to all connected clients");
 
+                ConsoleKeyInfo keyPressed = Console.ReadKey(true);
 
-            Console.WriteLine("Press enter to broadcast a message to all connected clients");
-            Console.ReadLine();
-            server.BroadCastToAllClients();
+                switch (keyPressed.Key)
+                {
+                    case ConsoleKey.Q:
+                        running = false;
+                        break;
+                    case ConsoleKey.B:
+                        server.BroadCastToAllClients();
+                        break;
+                    default:
+                        break;
+                }
+            }
 
-            Console.WriteLine("Press enter to exit");
-            Console.ReadLine();
+            Console.WriteLine("Exiting...");
         }
     }
 }
