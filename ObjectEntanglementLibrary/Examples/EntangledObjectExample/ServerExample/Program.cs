@@ -13,15 +13,16 @@ namespace ServerExample
             public void Echo(string message)
             {
                 Console.WriteLine(message);
-            }
+            }            
         }
-
-
+        
         static void Main(string[] args)
         {
             Console.WriteLine("Press enter to start server");
             Console.ReadLine();
-            var server = new OELib.ObjectEntanglement.EntangledServer<CommonDefinitions.IServerSideInterface>(8888, new ServerReactingObject());
+            var server = new OELib.ObjectEntanglement.EntangledServer<CommonDefinitions.IClientSideInterface>(8888, new ServerReactingObject());
+            server.Start();
+
             Console.WriteLine("Hit enter to exit");
             Console.ReadLine();
         }

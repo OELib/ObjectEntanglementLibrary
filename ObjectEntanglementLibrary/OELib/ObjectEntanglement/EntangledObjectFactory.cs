@@ -19,7 +19,7 @@ namespace OELib.ObjectEntanglement
             implementInterface(targetInterfaceType, typeAssemblyBuilder.Item1, fi);
             Type generatedType = typeAssemblyBuilder.Item1.CreateType();
             var instance = (T)Activator.CreateInstance(generatedType, new object[] { reactor });
-            //typeAssBuilder.Item2.Save("debug.dll");
+            typeAssemblyBuilder.Item2.Save("debug.dll");
             return instance;
         }
 
@@ -42,7 +42,8 @@ namespace OELib.ObjectEntanglement
                                                                         inputParams.Select(p => p.ParameterType).ToArray()
                                                                         );
                 ILGenerator ilGen = methodBuilder.GetILGenerator();
-                ilGen.Emit(OpCodes.Ldarg, 1);
+                ilGen.Emit(OpCodes.Nop);
+                ilGen.Emit(OpCodes.Ldarg_0);
                 ilGen.Emit(OpCodes.Ldfld, ractorField);
                 ilGen.Emit(OpCodes.Ldstr, methodInfo.Name);
                 ilGen.Emit(OpCodes.Ldc_I4, inputParams.Count());
@@ -71,6 +72,10 @@ namespace OELib.ObjectEntanglement
                         ilGen.Emit(OpCodes.Castclass, retParam.ParameterType);
                     }
                 }
+                else
+                {
+                    ilGen.Emit(OpCodes.Pop);
+                }
                 ilGen.Emit(OpCodes.Ret);
                 typeBuilder.DefineMethodOverride(methodBuilder, methodInfo);
             }
@@ -82,7 +87,7 @@ namespace OELib.ObjectEntanglement
             AssemblyName assName = new AssemblyName();
             assName.Name = assemblyName;
             AssemblyBuilder assBuilder = appDom.DefineDynamicAssembly(assName, AssemblyBuilderAccess.RunAndSave);
-            ModuleBuilder modBuild = assBuilder.DefineDynamicModule(moduleName, "dean.dll");
+            ModuleBuilder modBuild = assBuilder.DefineDynamicModule(moduleName, "debug.dll");
             TypeBuilder typBuild = modBuild.DefineType(typeName, TypeAttributes.Public);
             return new Tuple<TypeBuilder, AssemblyBuilder>(typBuild, assBuilder);
         }
