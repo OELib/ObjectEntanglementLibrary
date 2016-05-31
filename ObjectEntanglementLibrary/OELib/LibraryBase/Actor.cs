@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -7,7 +6,7 @@ namespace OELib.LibraryBase
 {
     public class Actor : IDisposable
     {
-        protected BlockingCollection<Action> _inbox = new BlockingCollection<Action>();
+        protected PriorityQueue<Action> _inbox = new PriorityQueue<Action>();
 
         protected readonly System.Threading.Thread _thread;
 
@@ -19,22 +18,23 @@ namespace OELib.LibraryBase
 
         private void loop()
         {
-            foreach (Action action in _inbox.GetConsumingEnumerable()) action();
+            foreach (Action action in _inbox.GetConsumingEnumerable())
+                action();
         }
 
-        public void Post(Action action)
+        public void Post(Action action, Priority priority = Priority.Normal)
         {
-            _inbox.Add(action);
+            _inbox.Add(action, priority);
         }
 
-        public bool PostWait(Action action, int timeout = 0) // timeout <= 0 means infinite
+        public bool PostWait(Action action, Priority priority = Priority.Normal, int timeout = 0) // timeout <= 0 means infinite
         {
             AutoResetEvent complete = new AutoResetEvent(false);
             this.Post(() =>
             {
                 action();
                 complete.Set();
-            });
+            }, priority);
             if (timeout > 0) return complete.WaitOne(timeout);
             else complete.WaitOne();
             return true;
@@ -48,7 +48,7 @@ namespace OELib.LibraryBase
 
         public bool Idle => _inbox.Count == 0;
 
-        public Task PostWaitAsync(Action action, int timeout = 0) => Task.Run(() => PostWait(action, timeout));
+        public Task PostWaitAsync(Action action, Priority priority = Priority.Normal, int timeout = 0) => Task.Run(() => PostWait(action, priority, timeout));
 
         public void Dispose()
         {
