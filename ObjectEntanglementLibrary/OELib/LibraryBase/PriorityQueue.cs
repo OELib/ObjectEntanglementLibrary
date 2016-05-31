@@ -2,41 +2,15 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace OELib.LibraryBase
 {
     public class PriorityQueue<T> : IProducerConsumerCollection<T>
     {
+        private readonly object _lock = new object();
         private bool _completed;
         private List<T> _queue = new List<T>();
-        private readonly object _lock = new object();
-
-        public void Add(T item)
-        {
-            if (!TryAdd(item)) throw new InvalidOperationException("Priority queue completed.");
-        }
-
-        public void CompleteAdding()
-        {
-            lock (_lock)
-            {
-                _completed = true;
-                Monitor.PulseAll(_lock);
-            }
-        }
-
-
-        public T Take()
-        {
-            T item;
-            if (!TryTake(out item)) throw new InvalidOperationException("Priority queue completed.");
-            return item;
-        }
-
         public int Count
         {
             get
@@ -55,6 +29,20 @@ namespace OELib.LibraryBase
             }
         }
 
+        public void Add(T item)
+        {
+            if (!TryAdd(item)) throw new InvalidOperationException("Priority queue completed.");
+        }
+
+        public void CompleteAdding()
+        {
+            lock (_lock)
+            {
+                _completed = true;
+                Monitor.PulseAll(_lock);
+            }
+        }
+
         public void CopyTo(Array array, int index)
         {
             throw new NotImplementedException();
@@ -70,6 +58,17 @@ namespace OELib.LibraryBase
             throw new NotImplementedException();
         }
 
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        public T Take()
+        {
+            T item;
+            if (!TryTake(out item)) throw new InvalidOperationException("Priority queue completed.");
+            return item;
+        }
         public T[] ToArray()
         {
             throw new NotImplementedException();
@@ -89,7 +88,6 @@ namespace OELib.LibraryBase
         {
             lock (_lock)
             {
-
                 while (_queue.Count == 0 && !_completed)
                     Monitor.Wait(_lock);
                 if (_completed && _queue.Count == 0)
@@ -104,11 +102,6 @@ namespace OELib.LibraryBase
                     return true;
                 }
             }
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            throw new NotImplementedException();
         }
     }
 }
