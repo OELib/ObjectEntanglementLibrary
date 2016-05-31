@@ -14,20 +14,15 @@ namespace OELib.LibraryBase
         private bool _completed;
         private List<T> _queue = new List<T>();
         private readonly object _lock = new object();
-        
+
         public void Add(T item)
         {
-            lock(_lock)
-            {
-                if (_completed) throw new InvalidOperationException("Priority queue completed.");
-                _queue.Add(item);
-                Monitor.Pulse(_lock);
-            }
+            if (!TryAdd(item)) throw new InvalidOperationException("Priority queue completed.");
         }
 
         public void CompleteAdding()
         {
-            lock(_lock)
+            lock (_lock)
             {
                 _completed = true;
                 Monitor.PulseAll(_lock);
@@ -38,17 +33,10 @@ namespace OELib.LibraryBase
         public T Take()
         {
             T item;
-            lock(_lock)
-            {
-                while (_queue.Count == 0 && !_completed)
-                    Monitor.Wait(_lock);
-                if (_completed && _queue.Count == 0) throw new InvalidOperationException("Priority queue completed.");
-                item = _queue[0];
-                _queue.RemoveAt(0);
-            }
+            if (!TryTake(out item)) throw new InvalidOperationException("Priority queue completed.");
             return item;
         }
-        
+
         public int Count
         {
             get
@@ -89,7 +77,7 @@ namespace OELib.LibraryBase
 
         public bool TryAdd(T item)
         {
-            lock(_lock)
+            lock (_lock)
             {
                 if (_completed) return false;
                 _queue.Add(item);
@@ -99,9 +87,9 @@ namespace OELib.LibraryBase
 
         public bool TryTake(out T item)
         {
-            lock(_lock)
+            lock (_lock)
             {
-                
+
                 while (_queue.Count == 0 && !_completed)
                     Monitor.Wait(_lock);
                 if (_completed && _queue.Count == 0)
