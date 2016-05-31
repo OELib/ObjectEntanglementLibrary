@@ -6,11 +6,20 @@ using System.Threading;
 
 namespace OELib.LibraryBase
 {
+
+    public enum Priority
+    {
+        Normal, High
+    }
+
     public class PriorityQueue<T> : IProducerConsumerCollection<T>, IDisposable
     {
+
+
+
         private readonly object _lock = new object();
         private bool _completed;
-        private List<T> _queue = new List<T>();
+        private LinkedList<T> _queue = new LinkedList<T>();
         public int Count
         {
             get
@@ -33,7 +42,7 @@ namespace OELib.LibraryBase
         {
             if (!TryAdd(item)) throw new InvalidOperationException("Priority queue completed.");
         }
-        public void Add(T item, uint priority)
+        public void Add(T item, Priority priority)
         {
             if (!TryAdd(item, priority)) throw new InvalidOperationException("Priority queue completed.");
         }
@@ -92,19 +101,26 @@ namespace OELib.LibraryBase
             throw new NotImplementedException();
         }
 
-        public bool TryAdd(T item, uint priority)
+        public bool TryAdd(T item, Priority priority)
         {
             lock (_lock)
             {
                 if (_completed) return false;
-                int position = (int)Math.Round((double)Math.Min(100, priority) / 100 * _queue.Count);
-                _queue.Insert(position, item);
+                switch (priority)
+                {
+                    case Priority.Normal:
+                        _queue.AddLast(item);
+                        break;
+                    case Priority.High:
+                        _queue.AddFirst(item);
+                        break;
+                }
                 Monitor.Pulse(_lock);
                 return true;
             }
         }
 
-        public bool TryAdd(T item) => TryAdd(item, 100);
+        public bool TryAdd(T item) => TryAdd(item, Priority.Normal);
 
         public bool TryTake(out T item)
         {
@@ -119,8 +135,8 @@ namespace OELib.LibraryBase
                 }
                 else
                 {
-                    item = _queue[0];
-                    _queue.RemoveAt(0);
+                    item = _queue.First.Value;//_queue[0];
+                    _queue.RemoveFirst();
                     return true;
                 }
             }
