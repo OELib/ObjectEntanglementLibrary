@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace OELib.LibraryBase
 {
-    public class PriorityQueue<T> : IProducerConsumerCollection<T>
+    public class PriorityQueue<T> : IProducerConsumerCollection<T>, IDisposable
     {
         private readonly object _lock = new object();
         private bool _completed;
@@ -57,23 +57,30 @@ namespace OELib.LibraryBase
             throw new NotImplementedException();
         }
 
-        public IEnumerator<T> GetConsumingEnumerable()
+        public IEnumerable<T> GetConsumingEnumerable()
+        {
+            T item;
+            while (TryTake(out item))
+                yield return item;
+        }
+        public void Dispose()
+        {
+            CompleteAdding();
+        }
+
+        public IEnumerator<T> GetEnumerator()
         {
             T item;
             while (TryTake(out item))
                 yield return item;
         }
 
-        public IEnumerator<T> GetEnumerator()
-        {
-            return GetConsumingEnumerable();
-        }
-
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return GetConsumingEnumerable();
+            T item;
+            while (TryTake(out item))
+                yield return item;
         }
-
         public T Take()
         {
             T item;
@@ -92,6 +99,7 @@ namespace OELib.LibraryBase
                 if (_completed) return false;
                 int position = (int)Math.Round((double)Math.Min(100, priority) / 100 * _queue.Count);
                 _queue.Insert(position, item);
+                Monitor.Pulse(_lock);
                 return true;
             }
         }

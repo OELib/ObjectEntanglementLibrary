@@ -86,9 +86,9 @@ namespace OELibTests
                     producersDoneEvt[index].Set();
                 });
             }
-            producersDoneEvt.ToList().All(p => p.WaitOne());
+            producersDoneEvt.ToList().ForEach(p => p.WaitOne());
             pq.CompleteAdding();
-            consumersDoneEvt.ToList().All(p => p.WaitOne());
+            consumersDoneEvt.ToList().ForEach(p => p.WaitOne());
             Assert.AreEqual(produceCount * producers, consumed.SelectMany(l => l).ToList().Count);
         }
 
