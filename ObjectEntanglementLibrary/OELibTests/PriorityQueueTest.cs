@@ -174,5 +174,32 @@ namespace OELibTests
             finishEvent.WaitOne();
             Assert.AreEqual(count, collected.Count);
         }
+
+        [TestMethod]
+        public void EnumeratorTest()
+        {
+            AutoResetEvent finishEvent = new AutoResetEvent(false);
+            List<int> collected = new List<int>();
+            int count = 1000;
+            var pq = new PriorityQueue<int>();
+            Task.Run(() =>
+            {
+                for (int i = 0; i < count; i++) Assert.IsTrue(pq.TryAdd(i));
+                pq.CompleteAdding();
+            });
+            Task.Run(() =>
+            {
+                foreach (int j in pq)
+                    collected.Add(j);
+                finishEvent.Set();
+            });
+            finishEvent.WaitOne();
+            Assert.AreEqual(count, collected.Count);
+        }
+
+
+
+
+
     }
 }
