@@ -197,9 +197,15 @@ namespace OELibTests
             Assert.AreEqual(count, collected.Count);
         }
 
-
-
-
-
+        [TestMethod]
+        public void CountTest()
+        {
+            var pq = new PriorityQueue<int>();
+            Assert.AreEqual(0, pq.Count);
+            pq.Add(1);
+            Assert.AreEqual(1, pq.Count);
+            pq.Take();
+            Assert.AreEqual(0, pq.Count);
+        }
     }
 }
