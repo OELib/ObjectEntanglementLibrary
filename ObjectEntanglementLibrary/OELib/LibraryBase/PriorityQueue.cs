@@ -57,18 +57,21 @@ namespace OELib.LibraryBase
             throw new NotImplementedException();
         }
 
-        public IEnumerator<T> GetEnumerator()
+        public IEnumerator<T> GetConsumingEnumerable()
         {
             T item;
             while (TryTake(out item))
                 yield return item;
         }
 
+        public IEnumerator<T> GetEnumerator()
+        {
+            return GetConsumingEnumerable();
+        }
+
         IEnumerator IEnumerable.GetEnumerator()
         {
-            T item;
-            while (TryTake(out item))
-                yield return item;
+            return GetConsumingEnumerable();
         }
 
         public T Take()
