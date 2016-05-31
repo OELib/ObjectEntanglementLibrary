@@ -57,6 +57,7 @@
     <Compile Include="LibraryBase\Messages\Ping.cs" />
     <Compile Include="LibraryBase\Messages\Pong.cs" />
     <Compile Include="LibraryBase\Messages\TraceableMessage.cs" />
+    <Compile Include="LibraryBase\PriorityQueue.cs" />
     <Compile Include="LibraryBase\ReconnectingClientSideConnection.cs" />
     <Compile Include="LibraryBase\ServerSideConnection.cs" />
     <Compile Include="ObjectTunnel\ObjectTunnelClient.cs" />
