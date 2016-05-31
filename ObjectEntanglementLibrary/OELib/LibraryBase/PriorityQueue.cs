@@ -19,6 +19,7 @@ namespace OELib.LibraryBase
         {
             lock(_lock)
             {
+                if (_completed) throw new InvalidOperationException("Priority queue completed.");
                 _queue.Add(item);
                 Monitor.Pulse(_lock);
             }
@@ -39,9 +40,9 @@ namespace OELib.LibraryBase
             T item;
             lock(_lock)
             {
-                while (_queue.Count == 0 || !_completed)
+                while (_queue.Count == 0 && !_completed)
                     Monitor.Wait(_lock);
-                if (_completed) throw new ThreadInterruptedException("Priority queue completed.");
+                if (_completed && _queue.Count == 0) throw new InvalidOperationException("Priority queue completed.");
                 item = _queue[0];
                 _queue.RemoveAt(0);
             }
