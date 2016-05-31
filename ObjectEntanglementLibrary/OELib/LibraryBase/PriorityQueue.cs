@@ -33,6 +33,10 @@ namespace OELib.LibraryBase
         {
             if (!TryAdd(item)) throw new InvalidOperationException("Priority queue completed.");
         }
+        public void Add(T item, uint priority)
+        {
+            if (!TryAdd(item, priority)) throw new InvalidOperationException("Priority queue completed.");
+        }
 
         public void CompleteAdding()
         {
@@ -78,15 +82,18 @@ namespace OELib.LibraryBase
             throw new NotImplementedException();
         }
 
-        public bool TryAdd(T item)
+        public bool TryAdd(T item, uint priority)
         {
             lock (_lock)
             {
                 if (_completed) return false;
-                _queue.Add(item);
+                int position = (int)Math.Round((double)Math.Min(100, priority) / 100 * _queue.Count);
+                _queue.Insert(position, item);
                 return true;
             }
         }
+
+        public bool TryAdd(T item) => TryAdd(item, 100);
 
         public bool TryTake(out T item)
         {

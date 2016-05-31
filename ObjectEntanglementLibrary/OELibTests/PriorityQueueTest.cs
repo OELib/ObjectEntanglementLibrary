@@ -207,5 +207,44 @@ namespace OELibTests
             pq.Take();
             Assert.AreEqual(0, pq.Count);
         }
+
+
+        [TestMethod]
+        public void PriorityAddingTest()
+        {
+            var pq = new PriorityQueue<int>();
+            for (int i = 0; i < 100; i++) pq.Add(i);
+            pq.Add(1000, 0);
+            int j = pq.Take();
+            Assert.AreEqual(1000, j);
+            pq.Add(1000, 100);
+            pq.CompleteAdding();
+            foreach (int l in pq) j = l;
+            Assert.AreEqual(1000, j);
+            pq = new PriorityQueue<int>();
+            for (int i = 0; i < 100; i++) pq.Add(i);
+            pq.Add(1000, 50);
+            for (int i = 0; i < 50; i++) pq.Take();
+            j = pq.Take();
+            Assert.AreEqual(1000, j);
+            pq = new PriorityQueue<int>();
+            for (int i = 0; i < 100; i++) pq.Add(i);
+            pq.Add(1000, 500);
+            pq.CompleteAdding();
+            foreach (int l in pq) j = l;
+            Assert.AreEqual(1000, j);
+            pq = new PriorityQueue<int>();
+            pq.Add(1000, 100);
+            j = pq.Take();
+            Assert.AreEqual(1000, j);
+            pq.Add(1000, 0);
+            j = pq.Take();
+            Assert.AreEqual(1000, j);
+            pq.Add(1000, 50);
+            j = pq.Take();
+            Assert.AreEqual(1000, j);
+        }
+
+
     }
 }
