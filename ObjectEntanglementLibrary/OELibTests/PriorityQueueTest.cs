@@ -46,14 +46,14 @@ namespace OELibTests
             }
             catch (InvalidOperationException) { }
         }
-        
+
         [TestMethod]
         public void OneProducerOneConsumerTest()
         {
             AutoResetEvent finishEvent = new AutoResetEvent(false);
             List<int> collected = new List<int>();
             var pq = new PriorityQueue<int>();
-            Task.Run(()=>
+            Task.Run(() =>
             {
                 for (int i = 0; i < 1000; i++) pq.Add(i);
                 pq.CompleteAdding();
@@ -77,9 +77,6 @@ namespace OELibTests
             finishEvent.WaitOne();
             Assert.AreEqual(1000, collected.Count);
         }
-
-
-
 
         [TestMethod]
         public void MultipleProducersMultipleConsumersTest()
@@ -132,11 +129,58 @@ namespace OELibTests
             Assert.AreEqual(produceCount * producers, consumed.SelectMany(l => l).ToList().Count);
         }
 
+        [TestMethod]
+        public void TryAddTryTakeTest()
+        {
+            var pq = new PriorityQueue<int>();
+            int i = 100;
+            int j = 0;
+            Assert.IsTrue(pq.TryAdd(i));
+            Assert.IsTrue(pq.TryTake(out j));
+            Assert.AreEqual(i, j);
+        }
 
+        [TestMethod]
+        public void TryCompletedTest()
+        {
+            var pq = new PriorityQueue<int>();
+            Assert.IsTrue(pq.TryAdd(1));
+            Assert.IsTrue(pq.TryAdd(2));
+            pq.CompleteAdding();
+            Assert.IsFalse(pq.TryAdd(3));
+            int j;
+            Assert.IsTrue(pq.TryTake(out j));
+            Assert.AreEqual(1, j);
+            Assert.IsTrue(pq.TryTake(out j));
+            Assert.AreEqual(2, j);
+            Assert.IsFalse(pq.TryTake(out j));
+        }
 
+        public void TryPatternOneProducerOneConsumerTest()
+        {
+            AutoResetEvent finishEvent = new AutoResetEvent(false);
+            List<int> collected = new List<int>();
+            int count = 1000;
+            var pq = new PriorityQueue<int>();
+            Task.Run(() =>
+            {
+                for (int i = 0; i < count; i++) Assert.IsTrue(pq.TryAdd(i));
+                pq.CompleteAdding();
+            });
 
-
-
+            Task.Run(() =>
+            {
+                bool couldTake;
+                do
+                {
+                    int j;
+                    couldTake = pq.TryTake(out j);
+                } while (couldTake);
+                finishEvent.Set();
+            });
+            finishEvent.WaitOne();
+            Assert.AreEqual(count, collected.Count);
+        }
 
 
     }
