@@ -6,12 +6,6 @@ using System.Threading;
 
 namespace OELib.LibraryBase
 {
-
-    public enum Priority
-    {
-        Normal, High
-    }
-
     public class PriorityQueue<T> : IProducerConsumerCollection<T>, IDisposable
     {
 

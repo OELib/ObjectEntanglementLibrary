@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace OELib.LibraryBase
+﻿namespace OELib.LibraryBase
 {
-    class Priority
+    public enum Priority
     {
+        Normal, High
     }
 }
