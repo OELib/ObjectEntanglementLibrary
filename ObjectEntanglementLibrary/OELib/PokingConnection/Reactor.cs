@@ -1,4 +1,4 @@
-﻿#define DEBUGOUTPUT
+﻿#define _DEBUGOUTPUT
 
 using OELib.LibraryBase;
 using OELib.LibraryBase.Messages;
@@ -41,9 +41,11 @@ namespace OELib.PokingConnection
             }
         }
 
+        public int DefaultCallTimeout { get; set; } = 60000;
+        public Priority DefaultCallPriority { get; set; } = Priority.Normal;
+
         public Reactor(Connection connection, object reactingObject)
         {
-            //connection.Name += $" ({reactingObject.ToString()})";
             _connection = connection;
             _reactingObject = reactingObject;
             _connection.MessageRecieved += _connection_MessageRecieved;
@@ -64,30 +66,23 @@ namespace OELib.PokingConnection
             });
         }
 
-        private void _connection_MessageRecieved(object sender, Message mes)
+        private void _connection_MessageRecieved(object sender, Message message)
         {
 #if (DEBUGOUTPUT)
-            Debug.WriteLine($"Reactor of {_connection.Name} got message  {mes.ToString()}");
+            Debug.WriteLine($"Reactor of {_connection.Name} got message  {message.ToString()}");
 #endif
-            if (mes is InspectRemoteObject)
+            if (message is InspectRemoteObject)
             {
-                //try
-                //{
 #if (DEBUGOUTPUT)
-                //Debug.WriteLine($"Connection {_connection.Name} got inspection request");
+                Debug.WriteLine($"Connection {_connection.Name} got inspection request");
 #endif
-                var result = new RemoteObjectInspectionResult(mes as InspectRemoteObject, LocalReactingObjectInfo);
+                var result = new RemoteObjectInspectionResult(message as InspectRemoteObject, LocalReactingObjectInfo);
                 _connection.SendMessage(result);
-                //}
-                //catch (Exception ex)
-                //{
-                //    Debug.WriteLine("EXECPTION IN INSPECTION " + ex.ToString());
-                //}
             }
-            if (mes is CallMethod)
+            if (message is CallMethod)
             {
                 Exception exc = null;
-                var callMessage = mes as CallMethod;
+                var callMessage = message as CallMethod;
                 object response = null;
                 try
                 {
@@ -99,28 +94,25 @@ namespace OELib.PokingConnection
                 }
                 finally
                 {
-                    _connection.SendMessage(new CallMethodResponse(callMessage, response, exc));
+                    _connection.SendMessage(new CallMethodResponse(callMessage, response, exc) { Priority = message.Priority });
                 }
             }
         }
 
-        public object CallRemoteMethod(string methodName, params object[] arguments)
+        public object CallRemoteMethod(Priority priority, int timeout, string methodName, params object[] arguments)
         {
             if (IsMethodSupported(methodName) == false) throw new NotSupportedException($"Remote method {methodName} not supported");
-            CallMethodResponse response = _connection.Ask(new CallMethod(methodName, arguments)) as CallMethodResponse;
+            CallMethodResponse response = _connection.Ask(new CallMethod(methodName, arguments) { Priority = priority }, timeout) as CallMethodResponse;
             if (response == null) throw new NullResponseException();
             if (response.Exception != null) throw new RemoteException(response.Exception);
             return response.Response;
         }
 
         public object CallRemoteMethod(int timeout, string methodName, params object[] arguments)
-        {
-            if (IsMethodSupported(methodName) == false) throw new NotSupportedException($"Remote method {methodName} not supported");
-            CallMethodResponse response = _connection.Ask(new CallMethod(methodName, arguments), timeout) as CallMethodResponse;
-            if (response == null) throw new NullResponseException();
-            if (response.Exception != null) throw new RemoteException(response.Exception);
-            return response.Response;
-        }
+            => CallRemoteMethod(DefaultCallPriority, timeout, methodName, arguments);
+
+        public object CallRemoteMethod(string methodName, params object[] arguments)
+            => CallRemoteMethod(DefaultCallPriority, DefaultCallTimeout, methodName, arguments);
 
         public bool IsMethodSupported(string methodName) => RemoteReactingObjectInfo != null ? RemoteReactingObjectInfo.Methods.Any(mi => mi.Name == methodName) : false;
 
