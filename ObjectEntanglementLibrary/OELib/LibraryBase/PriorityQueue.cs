@@ -8,9 +8,6 @@ namespace OELib.LibraryBase
 {
     public class PriorityQueue<T> : IProducerConsumerCollection<T>, IDisposable
     {
-
-
-
         private readonly object _lock = new object();
         private bool _completed;
         private LinkedList<T> _queue = new LinkedList<T>();
@@ -129,7 +126,7 @@ namespace OELib.LibraryBase
                 }
                 else
                 {
-                    item = _queue.First.Value;//_queue[0];
+                    item = _queue.First.Value;
                     _queue.RemoveFirst();
                     return true;
                 }
