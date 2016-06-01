@@ -83,7 +83,7 @@ namespace OELib.LibraryBase
             {
                 started = false;
                 _pingTimer.Stop();
-                SendMessage(new Bye());//todo send priority message
+                SendMessage(new Bye());
                 byteClient.Stop(ex);
                 Stopped?.Invoke(this, ex);
             }
@@ -173,7 +173,7 @@ namespace OELib.LibraryBase
             _ms.Seek(0, SeekOrigin.Begin);
             byte[] buffer = new byte[length];
             _ms.Read(buffer, 0, length);
-            return byteClient.SendQuanta(buffer);
+            return byteClient.SendQuanta(buffer, message.Priority);
         }
 
         public virtual TraceableMessage Ask(TraceableMessage message, int timeout = 60000)

@@ -140,7 +140,7 @@ namespace OELib.LibraryBase
             readThread.Start();
         }
 
-        public bool SendQuanta(byte[] data)
+        public bool SendQuanta(byte[] data, Priority priority = Priority.Normal)
         {
             if (!IsReady) return false;
             bool ok = false;
@@ -165,7 +165,7 @@ namespace OELib.LibraryBase
                     Stop(ex);
                 }
                 ok = (sent == length + header.Length);
-            });
+            }, priority);
             return (ok && ok2);
         }
 
