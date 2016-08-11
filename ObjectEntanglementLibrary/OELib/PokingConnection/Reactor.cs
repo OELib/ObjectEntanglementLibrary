@@ -99,6 +99,13 @@ namespace OELib.PokingConnection
             }
         }
 
+        public void CallRemoteVoidMethod(Priority priority, string methodName, params object[] arguments)
+        {
+            if (IsMethodSupported(methodName) == false) throw new NotSupportedException($"Remote method {methodName} not supported");
+            //TODO: check that the method is a void reurn method.
+            _connection.SendMessage(new CallMethod(methodName, arguments) { Priority = priority});
+        }
+
         public object CallRemoteMethod(Priority priority, int timeout, string methodName, params object[] arguments)
         {
             if (IsMethodSupported(methodName) == false) throw new NotSupportedException($"Remote method {methodName} not supported");
