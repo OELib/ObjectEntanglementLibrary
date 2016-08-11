@@ -82,5 +82,14 @@ namespace SimpleExampleClient
         {
             Console.WriteLine("Received message: {0}", testObject.SomeData);
         }
+
+        /// <summary>
+        /// Calls a void method on server but does not wait for the replay
+        /// </summary>
+        public void CallVoidMethodFireAndForget()
+        {
+            _client.Reactor.CallRemoteVoidMethod(OELib.LibraryBase.Priority.Normal, "Echo", $"Local time is {DateTime.Now.ToShortTimeString()}.");
+        }
+
     }
 }

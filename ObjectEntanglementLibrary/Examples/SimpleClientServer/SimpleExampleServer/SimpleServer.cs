@@ -79,5 +79,14 @@ namespace SimpleExampleServer
             return largeObject;
         }
         
+        /// <summary>
+        /// Example of void return method call
+        /// </summary>
+        /// <param name="message">Message to print</param>
+        public void Echo(string message)
+        {
+            Console.WriteLine($"Message from client: {message}");
+        }
+
     }
 }

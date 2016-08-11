@@ -19,7 +19,8 @@ namespace SimpleExampleClient
 $@"Client started. Select an action:
 Q:  Quit
 P:  Send a Ping and wait for a Pong reply.
-L:  Send a large object and wait for the server to return it.");
+L:  Send a large object and wait for the server to return it.
+V:  Call a void method (fire and forget).");
 
                 ConsoleKeyInfo keyPressed = Console.ReadKey(true);
 
@@ -33,6 +34,9 @@ L:  Send a large object and wait for the server to return it.");
                         break;
                     case ConsoleKey.L:
                         client.SendLargeObject();
+                        break;
+                    case ConsoleKey.V:
+                        client.CallVoidMethodFireAndForget();
                         break;
                     default:
                         break;
