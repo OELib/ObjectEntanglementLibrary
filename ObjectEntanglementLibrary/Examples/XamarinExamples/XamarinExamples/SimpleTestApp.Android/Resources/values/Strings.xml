@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="ConnectButtonText">Connect to OELib server</string>
+  <string name="GetServerObjectResult">null</string>
+  <string name="ApplicationName">Test app for OELib/Xamarin.Android</string>
+  <string name="GetServerObjectButtonText">Not connected</string>
+  <string name="ServerIpText">Server IP</string>
+  <string name="ServerPortText">Server port</string>
+  <string name="EnterMessageText">Enter message</string>
+</resources>
