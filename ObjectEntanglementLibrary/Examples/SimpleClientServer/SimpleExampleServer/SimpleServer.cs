@@ -78,7 +78,7 @@ namespace SimpleExampleServer
             // Return the LargeObject to the calling client
             return largeObject;
         }
-        
+
         /// <summary>
         /// Example of void return method call
         /// </summary>
@@ -87,6 +87,33 @@ namespace SimpleExampleServer
         {
             Console.WriteLine($"Message from client: {message}");
         }
+
+        #region Tests generics
+        public string TestGenerics()
+        {
+            return "Non generic method called";
+        }
+
+        public string TestGenerics<T>(T testObject)
+        {
+            return $"Generic type argument was: {testObject.GetType()}";
+        }
+
+        public string TestGenerics<T>(T testObject, T test2)
+        {
+            return $"Generic type argument was: {testObject.GetType()} and {test2.GetType()}";
+        }
+
+        public string TestGenerics<T>(T testObject, T test2, string testString)
+        {
+            return $"Generic type argument was: {testObject.GetType()} and {test2.GetType()}. Test string was: {testString}";
+        }
+
+        public string TestGenerics<T>()
+        {
+            return $"Generic type was: {typeof(T)}";
+        }
+        #endregion
 
     }
 }
