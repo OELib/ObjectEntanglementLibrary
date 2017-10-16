@@ -33,8 +33,30 @@ namespace SimpleExampleClient
             _client.Reactor.RemoteReactingInspectionComplete += (s, e) =>
             {
                 Console.WriteLine("Connected to server.");
+                //TestGenerics();
                 //SendTestObjectToServer();
             };
+        }
+
+        private void TestGenerics()
+        {
+            var nonGeneric = _client.Reactor.IsMethodSupported("TestGenerics");
+            var generic = _client.Reactor.IsMethodSupported("TestGenerics<T>");
+
+            var testNonGeneric = _client.Reactor.CallRemoteMethod(_client.Reactor.DefaultCallPriority, _client.Reactor.DefaultCallTimeout, "TestGenerics");
+            Console.WriteLine(testNonGeneric as string);
+
+            var testGenerics = _client.Reactor.CallRemoteMethod<TestClass>(_client.Reactor.DefaultCallPriority, _client.Reactor.DefaultCallTimeout, "TestGenerics");
+            Console.WriteLine(testGenerics as string);
+
+            var testGenerics2 = _client.Reactor.CallRemoteMethod<TestClass>(_client.Reactor.DefaultCallPriority, _client.Reactor.DefaultCallTimeout, "TestGenerics", new TestClass());
+            Console.WriteLine(testGenerics2 as string);
+
+            var testGenerics3 = _client.Reactor.CallRemoteMethod<TestClass>(_client.Reactor.DefaultCallPriority, _client.Reactor.DefaultCallTimeout, "TestGenerics", new TestClass(), new TestClass());
+            Console.WriteLine(testGenerics3 as string);
+
+            var testGenerics4 = _client.Reactor.CallRemoteMethod<TestClass>(_client.Reactor.DefaultCallPriority, _client.Reactor.DefaultCallTimeout, "TestGenerics", new TestClass(), new TestClass(), "Hello generics");
+            Console.WriteLine(testGenerics4 as string);
         }
 
 

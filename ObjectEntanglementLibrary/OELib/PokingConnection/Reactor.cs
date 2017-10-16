@@ -86,7 +86,24 @@ namespace OELib.PokingConnection
                 object response = null;
                 try
                 {
-                    response = _reactingObject.GetType().InvokeMember(callMessage.MethodName, BindingFlags.InvokeMethod, null, _reactingObject, callMessage.Arguments);
+                    var method = _reactingObject.GetType()
+                         .GetMethods()
+                         .Where(m => ((!callMessage.IsGenericMethod && m.Name == callMessage.MethodName) ||  // Only match on name for non generic methods
+                                      (callMessage.IsGenericMethod && m.Name == callMessage.MethodName &&  m.IsGenericMethod)) &&
+                                     m.GetParameters().Length == callMessage.Arguments.Length) // Match the number of parameters between call and method
+                         .FirstOrDefault();
+
+                    if (method.ContainsGenericParameters)
+                    {
+                        var arguments = method.GetGenericArguments();
+                        var genericDef = method.GetGenericMethodDefinition();
+                        var methodGeneric = method.MakeGenericMethod(callMessage.GenericType);
+                        response = methodGeneric.Invoke(_reactingObject, callMessage.Arguments);
+                    }
+                    else
+                    {
+                        response = method.Invoke(_reactingObject, callMessage.Arguments);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -103,13 +120,23 @@ namespace OELib.PokingConnection
         {
             if (IsMethodSupported(methodName) == false) throw new NotSupportedException($"Remote method {methodName} not supported");
             //TODO: check that the method is a void return method.
-            _connection.SendMessage(new CallMethod(methodName, arguments) { Priority = priority});
+            _connection.SendMessage(new CallMethod(methodName, arguments, null) { Priority = priority });
         }
 
         public object CallRemoteMethod(Priority priority, int timeout, string methodName, params object[] arguments)
         {
-            if (IsMethodSupported(methodName) == false) throw new NotSupportedException($"Remote method {methodName} not supported");
-            CallMethodResponse response = _connection.Ask(new CallMethod(methodName, arguments) { Priority = priority }, timeout) as CallMethodResponse;
+            return SendCallToPeer(priority, timeout, methodName, arguments, null);
+        }
+
+        public object CallRemoteMethod<T>(Priority priority, int timeout, string methodName, params object[] arguments)
+        {
+            return SendCallToPeer(priority, timeout, methodName, arguments, typeof(T));
+        }
+
+        private object SendCallToPeer(Priority priority, int timeout, string methodName, object[] arguments, Type genericType)
+        {
+            if (IsMethodSupported(methodName, genericType != null) == false) throw new NotSupportedException($"Remote method {methodName} not supported");
+            CallMethodResponse response = _connection.Ask(new CallMethod(methodName, arguments, genericType) { Priority = priority }, timeout) as CallMethodResponse;
             if (response == null) throw new NullResponseException();
             if (response.Exception != null) throw new RemoteException(response.Exception);
             return response.Response;
@@ -121,7 +148,8 @@ namespace OELib.PokingConnection
         public object CallRemoteMethod(string methodName, params object[] arguments)
             => CallRemoteMethod(DefaultCallPriority, DefaultCallTimeout, methodName, arguments);
 
-        public bool IsMethodSupported(string methodName) => RemoteReactingObjectInfo != null ? RemoteReactingObjectInfo.Methods.Any(mi => mi.Name == methodName) : false;
+        public bool IsMethodSupported(string methodName, bool IsGeneric = false) => RemoteReactingObjectInfo != null ? RemoteReactingObjectInfo.Methods.Any(
+            mi => mi.Name == methodName && mi.IsGeneric == IsGeneric ) : false;
 
         public void SetProperty(string propertyName, object value)
         {

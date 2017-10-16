@@ -13,7 +13,7 @@ namespace OELib.PokingConnection
 
         public ObjectInfo(object reactingObject)
         {
-            Methods = reactingObject.GetType().GetMethods().Select(x => new MethodInfoCommunicationLibrary() { Name = x.Name }).ToList();
+            Methods = reactingObject.GetType().GetMethods().Select(x => new MethodInfoCommunicationLibrary() { Name = x.Name, IsGeneric = x.IsGenericMethod }).ToList();
             Properties = reactingObject.GetType().GetProperties().Select(x => new PropertyInfoCommunicationLibrary() { Name = x.Name }).ToList();
             Fields = reactingObject.GetType().GetFields().Select(x => new FieldInfoCommunicationLibrary() { Name = x.Name }).ToList();
             //todo: add more if needed
@@ -24,6 +24,8 @@ namespace OELib.PokingConnection
     public class MethodInfoCommunicationLibrary
     {
         public string Name { get; set; }
+
+        public bool IsGeneric { get; set; }
     }
 
     [Serializable]
