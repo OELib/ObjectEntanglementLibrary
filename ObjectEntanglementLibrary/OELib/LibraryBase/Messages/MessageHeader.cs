@@ -8,6 +8,6 @@ namespace OELib.LibraryBase.Messages
         public int Length;
         public bool DataIsCompressed;
 
-        public static int HeaderSize => System.Runtime.InteropServices.Marshal.SizeOf(typeof(MessageHeader));
+        public static int HeaderSize => Marshal.SizeOf(typeof(MessageHeader));
     }
 }

@@ -5,22 +5,25 @@ namespace OELib.LibraryBase
 {
     public class ReconnectingClientSideConnection : ClientSideConnection
     {
-        private Timer _reconnectTimer = new Timer(500);
+        private readonly Timer _reconnectTimer = new Timer(500);
 
-        public event EventHandler Restarting;
+        public ReconnectingClientSideConnection()
+        {
+            _reconnectTimer.Elapsed += _reconnectTimer_Elapsed;
+            Stopped += startReconnectingTimer;
+        }
 
         public bool EnableRestart { get; set; } = true;
 
-        public double ReconnectionInterval { get { return _reconnectTimer.Interval; } set { _reconnectTimer.Interval = value; } }
-
-        public ReconnectingClientSideConnection()
-            : base()
+        public double ReconnectionInterval
         {
-            _reconnectTimer.Elapsed += _reconnectTimer_Elapsed;
-            Stopped += StartReconnectingTimer;
+            get => _reconnectTimer.Interval;
+            set => _reconnectTimer.Interval = value;
         }
 
-        private void StartReconnectingTimer(object sender, Exception e)
+        public event EventHandler Restarting;
+
+        private void startReconnectingTimer(object sender, Exception e)
         {
             if (e != null)
                 _reconnectTimer.Start();
@@ -31,13 +34,13 @@ namespace OELib.LibraryBase
             _reconnectTimer.Stop();
             if (!EnableRestart) return;
             Restarting?.Invoke(this, null);
-            Start(remoteIP, remotePort);
+            Start(_remoteIp, _remotePort);
         }
 
-        public override bool Start(string IpAddress, int port)
+        public override bool Start(string ipAddress, int port)
         {
-            bool ok = base.Start(IpAddress, port);
-            if (!ok) StartReconnectingTimer(this, new Exception("Start failed"));
+            var ok = base.Start(ipAddress, port);
+            if (!ok) startReconnectingTimer(this, new Exception("Start failed"));
             return ok;
         }
     }

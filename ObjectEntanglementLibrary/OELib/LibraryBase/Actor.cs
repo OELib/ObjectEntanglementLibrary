@@ -6,19 +6,27 @@ namespace OELib.LibraryBase
 {
     public class Actor : IDisposable
     {
+        protected readonly Thread _thread;
         protected PriorityQueue<Action> _inbox = new PriorityQueue<Action>();
-
-        protected readonly System.Threading.Thread _thread;
 
         public Actor(ThreadPriority priority = ThreadPriority.Normal)
         {
-            _thread = new Thread(new ThreadStart(loop)) { IsBackground = true, Name = this.GetType().ToString(), Priority = priority };
+            _thread = new Thread(loop) {IsBackground = true, Name = GetType().ToString(), Priority = priority};
             _thread.Start();
+        }
+
+        public bool Idle => _inbox.Count == 0;
+
+        public void Dispose()
+        {
+            _inbox.CompleteAdding();
+            _thread.Join();
+            _inbox.Dispose();
         }
 
         private void loop()
         {
-            foreach (Action action in _inbox.GetConsumingEnumerable())
+            foreach (var action in _inbox.GetConsumingEnumerable())
                 action();
         }
 
@@ -27,16 +35,17 @@ namespace OELib.LibraryBase
             _inbox.Add(action, priority);
         }
 
-        public bool PostWait(Action action, Priority priority = Priority.Normal, int timeout = 0) // timeout <= 0 means infinite
+        public bool PostWait(Action action, Priority priority = Priority.Normal,
+            int timeout = 0) // timeout <= 0 means infinite
         {
-            AutoResetEvent complete = new AutoResetEvent(false);
-            this.Post(() =>
+            var complete = new AutoResetEvent(false);
+            Post(() =>
             {
                 action();
                 complete.Set();
             }, priority);
             if (timeout > 0) return complete.WaitOne(timeout);
-            else complete.WaitOne();
+            complete.WaitOne();
             return true;
         }
 
@@ -46,15 +55,9 @@ namespace OELib.LibraryBase
                 _inbox.Take();
         }
 
-        public bool Idle => _inbox.Count == 0;
-
-        public Task PostWaitAsync(Action action, Priority priority = Priority.Normal, int timeout = 0) => Task.Run(() => PostWait(action, priority, timeout));
-
-        public void Dispose()
+        public Task PostWaitAsync(Action action, Priority priority = Priority.Normal, int timeout = 0)
         {
-            _inbox.CompleteAdding();
-            _thread.Join();
-            _inbox.Dispose();
+            return Task.Run(() => PostWait(action, priority, timeout));
         }
     }
 }

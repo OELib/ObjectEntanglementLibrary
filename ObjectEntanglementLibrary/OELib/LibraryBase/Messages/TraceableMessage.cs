@@ -5,9 +5,6 @@ namespace OELib.LibraryBase.Messages
     [Serializable]
     public class TraceableMessage : Message
     {
-        public Guid MessageID { get; protected set; }
-        public Guid CallingMessageID { get; protected set; }
-
         public TraceableMessage()
         {
             MessageID = Guid.NewGuid();
@@ -18,5 +15,8 @@ namespace OELib.LibraryBase.Messages
         {
             CallingMessageID = callingMessage.MessageID;
         }
+
+        public Guid MessageID { get; protected set; }
+        public Guid CallingMessageID { get; protected set; }
     }
 }

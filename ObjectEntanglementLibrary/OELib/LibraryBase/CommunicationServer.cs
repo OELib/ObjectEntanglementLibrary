@@ -7,33 +7,32 @@ namespace OELib.LibraryBase
 {
     public class CommunicationServer<T> where T : Connection
     {
-        public event EventHandler<T> ClientConnected;
+        private readonly TcpListener _listener;
 
-        public event EventHandler<Tuple<T, Exception>> ClientDisconnected; //todo: use special class, not the ugly tuple :(
+        public CommunicationServer(IPEndPoint localEndPoint)
+        {
+            _listener = new TcpListener(localEndPoint);
+        }
 
-        private TcpListener _listener;
+        private Actor connectionManager { get; } = new Actor();
 
-        private Actor _connectionManager { get; } = new Actor();
-
+        // ReSharper disable once InconsistentNaming
         protected List<T> _connections { get; } = new List<T>();
 
         public List<T> Connections
         {
             get
             {
-                List<T> connections = new List<T>();
-                _connectionManager.PostWait(() =>
-                {
-                    _connections.ForEach(c => connections.Add(c));
-                });
+                var connections = new List<T>();
+                connectionManager.PostWait(() => { _connections.ForEach(c => connections.Add(c)); });
                 return connections;
             }
         }
 
-        public CommunicationServer(IPEndPoint localEndPoint)
-        {
-            _listener = new TcpListener(localEndPoint);
-        }
+        public event EventHandler<T> ClientConnected;
+
+        public event EventHandler<Tuple<T, Exception>> ClientDisconnected
+            ; //todo: use special class, not the ugly tuple :(
 
         public void Start()
         {
@@ -43,33 +42,37 @@ namespace OELib.LibraryBase
 
         private void callback(IAsyncResult ar)
         {
-            var lisetner = (ar.AsyncState as TcpListener); // maybe stupid not to use _listener here?
-            TcpClient client = null;
+            var lisetner = ar.AsyncState as TcpListener; // maybe stupid not to use _listener here?
+            TcpClient client;
             try
             {
+                // ReSharper disable once PossibleNullReferenceException
                 client = lisetner.EndAcceptTcpClient(ar);
             }
             catch (ObjectDisposedException)
             {
                 return;
             }
-            T connection = createInstance(client);
+            var connection = createInstance(client);
 
-            _connectionManager.PostWait(() =>
+            connectionManager.PostWait(() =>
             {
                 _connections.Add(connection);
-                ClientConnected?.Invoke(this, connection);//, null, null);
+                ClientConnected?.Invoke(this, connection); //, null, null);
             });
 
             connection.Stopped += (s, e) =>
             {
-                _connectionManager.PostWait(() => _connections.Remove(s as T));
-                ClientDisconnected?.Invoke(this, new Tuple<T, Exception>(s as T, e));//, null, null);
+                connectionManager.PostWait(() => _connections.Remove(s as T));
+                ClientDisconnected?.Invoke(this, new Tuple<T, Exception>(s as T, e)); //, null, null);
             };
 
             _listener.BeginAcceptTcpClient(callback, _listener);
         }
 
-        protected virtual T createInstance(TcpClient client) => Activator.CreateInstance(typeof(T), new object[] { client }) as T;
+        protected virtual T createInstance(TcpClient client)
+        {
+            return Activator.CreateInstance(typeof(T), client) as T;
+        }
     }
 }

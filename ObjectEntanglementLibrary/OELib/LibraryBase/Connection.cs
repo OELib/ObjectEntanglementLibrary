@@ -1,6 +1,5 @@
 ﻿#define _DEBUGOUTPUT
 
-using OELib.LibraryBase.Messages;
 using System;
 using System.IO;
 using System.Net.Sockets;
@@ -10,32 +9,55 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
+using OELib.LibraryBase.Messages;
+using Timer = System.Timers.Timer;
 
 namespace OELib.LibraryBase
 {
-    abstract public class Connection
+    public abstract class Connection
     {
-        private ILogger _logger;
+        private readonly ByteQuantaClient _byteClient;
 
-        private ByteQuantaClient byteClient;
+        private readonly IFormatter _formatter;
+        private readonly ILogger _logger;
+        private readonly AutoResetEvent _pingAutoReset = new AutoResetEvent(false);
 
-        private IFormatter _formatter;
-
-        private System.Timers.Timer _pingTimer = new System.Timers.Timer(60000);
-        private AutoResetEvent _pingAutoReset = new AutoResetEvent(false);
-        public double PingInterval { get { return _pingTimer.Interval; } set { _pingTimer.Interval = value; } }
+        private readonly Timer _pingTimer = new Timer(60000);
 
         private string _name;
+
+        protected bool _started;
         private TcpClient _tcpClient;
 
-        protected bool started = false;
+        protected Connection(IFormatter serializer = null, ILogger logger = null,
+            bool useCompression = false) //TODO: Complete ILog pattern to suit everyone's need
+        {
+            _formatter = serializer ?? new BinaryFormatter();
+            _logger = logger;
+            _byteClient = new ByteQuantaClient(this, useCompression);
+            _byteClient.PartialDataRead += readActivity;
+            _byteClient.QuantaReceived += quantaReceived;
+            _byteClient.Stopped += (s, ex) => Stop(ex);
+            _pingTimer.Elapsed += pingTimerElapsed;
+            controlMessageReceived += controlMessageIn;
+        }
 
-        public bool IsReady => started && byteClient.IsReady;
+        public double PingInterval
+        {
+            get => _pingTimer.Interval;
+            set => _pingTimer.Interval = value;
+        }
+
+        public bool IsReady => _started && _byteClient.IsReady;
 
         public string Name
         {
-            get { return _name; }
-            set { _name = value; byteClient.Name = value; }
+            get => _name;
+            set
+            {
+                _name = value;
+                _byteClient.Name = value;
+            }
         }
 
         public event EventHandler<Message> MessageRecieved;
@@ -46,30 +68,19 @@ namespace OELib.LibraryBase
 
         public event EventHandler Started;
 
-        public Connection(IFormatter serializer = null, ILogger logger = null, bool useCompression = false) //TODO: Complete ILog pattern to suit everyone's need
-        {
-            _formatter = serializer == null ? new BinaryFormatter() : serializer;
-            _logger = logger;
-            byteClient = new ByteQuantaClient(this, useCompression);
-            byteClient.PartialDataRead += readActivity;
-            byteClient.QuantaReceived += quantaReceived;
-            byteClient.Stopped += (s, ex) => Stop(ex);
-            _pingTimer.Elapsed += pingTimerElapsed;
-            controlMessageReceived += controlMessageIn;
-        }
-
+        // ReSharper disable once InconsistentNaming
         protected bool Start(TcpClient client)
         {
             _tcpClient = client;
 
-            if (byteClient.Start(_tcpClient))
+            if (_byteClient.Start(_tcpClient))
             {
                 _pingTimer.Start();
                 Started?.Invoke(this, null);
-                started = true;
+                _started = true;
                 return true;
             }
-            else return false;
+            return false;
         }
 
         public void Stop()
@@ -77,14 +88,15 @@ namespace OELib.LibraryBase
             Stop(null);
         }
 
+        // ReSharper disable once InconsistentNaming
         protected void Stop(Exception ex)
         {
-            if (started)
+            if (_started)
             {
-                started = false;
+                _started = false;
                 _pingTimer.Stop();
                 SendMessage(new Bye());
-                byteClient.Stop(ex);
+                _byteClient.Stop(ex);
                 Stopped?.Invoke(this, ex);
             }
         }
@@ -106,9 +118,7 @@ namespace OELib.LibraryBase
                 _pingAutoReset.Set();
             }
             if (message is Bye)
-            {
                 Stop(new Exception("Graceful goodbye."));
-            }
         }
 
         protected virtual void pingTimerElapsed(object sender, ElapsedEventArgs e)
@@ -119,11 +129,12 @@ namespace OELib.LibraryBase
 #if (DEBUGOUTPUT)
             Debug.WriteLine($"{Name} sending Ping -> ");
 #endif
+            // ReSharper disable once UnusedVariable
             var sendOK = SendMessage(ping);
 #if (DEBUGOUTPUT)
             Debug.WriteLine($"{Name } send ping success: {sendOK}");
 #endif
-            bool ok = _pingAutoReset.WaitOne((int)(PingInterval / 2));
+            var ok = _pingAutoReset.WaitOne((int) (PingInterval / 2));
             if (!ok) Stop(new Exception("No ping response"));
             else _pingTimer.Start();
         }
@@ -132,8 +143,8 @@ namespace OELib.LibraryBase
         {
             if (data.Length == 0) return;
 
-            MemoryStream ms = new MemoryStream();
-            ms.Write((byte[])data, 0, (int)data.Length);
+            var ms = new MemoryStream();
+            ms.Write(data, 0, data.Length);
             ms.Seek(0, SeekOrigin.Begin);
             Message message = null;
             try
@@ -142,19 +153,18 @@ namespace OELib.LibraryBase
             }
             catch (TargetInvocationException e)
             {
-                _logger?.Error($"TargetInvocationException when processing message: {e.ToString()}");
+                _logger?.Error($"TargetInvocationException when processing message: {e}");
             }
 
             if (message != null)
-            {
                 if (message is IControlMessage) controlMessageReceived?.Invoke(this, message as IControlMessage);
                 else MessageRecieved?.Invoke(this, message);
-            }
         }
 
         protected virtual void readActivity(object sender, int e)
         {
-            _pingAutoReset.Set(); // sometimes there is so much data that ping cant get trough. could get fixed with priority message
+            _pingAutoReset
+                .Set(); // sometimes there is so much data that ping cant get trough. could get fixed with priority message
             resetPingTimer();
         }
 
@@ -166,26 +176,28 @@ namespace OELib.LibraryBase
 
         public virtual bool SendMessage(Message message)
         {
-            if (!byteClient.IsReady) return false;
-            MemoryStream _ms = new MemoryStream();
-            _formatter.Serialize(_ms, message);
-            int length = (int)_ms.Position;
-            _ms.Seek(0, SeekOrigin.Begin);
-            byte[] buffer = new byte[length];
-            _ms.Read(buffer, 0, length);
-            return byteClient.SendQuanta(buffer, message.Priority);
+            if (!_byteClient.IsReady) return false;
+            var ms = new MemoryStream();
+            _formatter.Serialize(ms, message);
+            var length = (int) ms.Position;
+            ms.Seek(0, SeekOrigin.Begin);
+            var buffer = new byte[length];
+            ms.Read(buffer, 0, length);
+            return _byteClient.SendQuanta(buffer, message.Priority);
         }
 
         public virtual TraceableMessage Ask(TraceableMessage message, int timeout = 60000)
         {
             //Debug.WriteLine($"{Name} asking {message.ToString()}");
-            AutoResetEvent messageReceived = new AutoResetEvent(false);
+            var messageReceived = new AutoResetEvent(false);
             TraceableMessage returnMessage = null;
+            // ReSharper disable once ConvertToLocalFunction
             EventHandler<Message> handler = (sender, msg) =>
             {
-                if (msg is TraceableMessage && (msg as TraceableMessage).CallingMessageID == message.MessageID)
+                // ReSharper disable once CanBeReplacedWithTryCastAndCheckForNull
+                if (msg is TraceableMessage && ((TraceableMessage) msg).CallingMessageID == message.MessageID)
                 {
-                    returnMessage = msg as TraceableMessage;
+                    returnMessage = (TraceableMessage) msg;
                     messageReceived.Set();
                 }
             };
@@ -196,17 +208,14 @@ namespace OELib.LibraryBase
                 MessageRecieved -= handler;
                 return null;
             }
-            else
-            {
-                messageReceived.WaitOne(timeout);
-                MessageRecieved -= handler;
-                return returnMessage;
-            }
+            messageReceived.WaitOne(timeout);
+            MessageRecieved -= handler;
+            return returnMessage;
         }
 
         public virtual async Task<TraceableMessage> AskAsync(TraceableMessage message, int timeout = 60000)
         {
-            return await Task<TraceableMessage>.Factory.StartNew(() => { return Ask(message, timeout); });
+            return await Task<TraceableMessage>.Factory.StartNew(() => Ask(message, timeout));
         }
     }
 }
