@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.27004.2002
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OELib", "OELib\OELib.csproj", "{3D98BDF1-ACD5-4B1B-9C45-92ADA505AEDD}"
 EndProject
@@ -18,6 +18,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleExampleClient", "Examples\SimpleClientServer\SimpleExampleClient\SimpleExampleClient.csproj", "{C02F49C8-1FB2-41F9-B682-0C8DB8445FFA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleExampleCommon", "Examples\SimpleClientServer\SimpleExampleCommon\SimpleExampleCommon.csproj", "{498FEC80-D122-4CB5-856E-A48C24C09E86}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PokingConnectionExample", "Examples\PokingConnectionExample\PokingConnectionExample.csproj", "{5A0A98C1-8312-4D50-8E9E-C3D08551033D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -49,6 +51,10 @@ Global
 		{498FEC80-D122-4CB5-856E-A48C24C09E86}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{498FEC80-D122-4CB5-856E-A48C24C09E86}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{498FEC80-D122-4CB5-856E-A48C24C09E86}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A0A98C1-8312-4D50-8E9E-C3D08551033D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A0A98C1-8312-4D50-8E9E-C3D08551033D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A0A98C1-8312-4D50-8E9E-C3D08551033D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A0A98C1-8312-4D50-8E9E-C3D08551033D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -59,5 +65,9 @@ Global
 		{5D89A513-290E-49C8-9A95-4980381D6AAE} = {55752C3E-0616-4FCF-8297-1A304D0E4E0B}
 		{C02F49C8-1FB2-41F9-B682-0C8DB8445FFA} = {55752C3E-0616-4FCF-8297-1A304D0E4E0B}
 		{498FEC80-D122-4CB5-856E-A48C24C09E86} = {55752C3E-0616-4FCF-8297-1A304D0E4E0B}
+		{5A0A98C1-8312-4D50-8E9E-C3D08551033D} = {A3344C66-3CE7-4732-BA9E-890C8306C06B}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FAA5C6A3-47E8-4820-BF54-B979C7F18DCF}
 	EndGlobalSection
 EndGlobal
