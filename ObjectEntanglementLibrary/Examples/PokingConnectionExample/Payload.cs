@@ -1,16 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ProtoBuf;
 
 namespace PokingConnectionExample
 {
+    [ProtoContract]
     [Serializable]
     public class Payload
     {
+        [ProtoMember(1)]
         public string A { get; set; }
+        [ProtoMember(2)]
         public int B { get; set; }
+        [ProtoMember(3)]
         public double C { get; set; }
+        [ProtoMember(4)]
         public List<Tuple<string, int, double>> D { get; set; }
+        [ProtoMember(5)]
         public double[] E { get; set; }
 
 

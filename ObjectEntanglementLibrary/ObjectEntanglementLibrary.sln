@@ -21,6 +21,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleExampleCommon", "Exam
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PokingConnectionExample", "Examples\PokingConnectionExample\PokingConnectionExample.csproj", "{5A0A98C1-8312-4D50-8E9E-C3D08551033D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OELibProtobufFormatter", "OELibProtobufFormatter\OELibProtobufFormatter.csproj", "{8D567313-8971-454B-9019-82AC9516D316}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OELibProtobufFormatterTests", "OELibProtobufFormatterTests\OELibProtobufFormatterTests.csproj", "{19CC6521-64F8-446E-AAB2-D7285B6B06A5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,6 +59,14 @@ Global
 		{5A0A98C1-8312-4D50-8E9E-C3D08551033D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5A0A98C1-8312-4D50-8E9E-C3D08551033D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5A0A98C1-8312-4D50-8E9E-C3D08551033D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8D567313-8971-454B-9019-82AC9516D316}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8D567313-8971-454B-9019-82AC9516D316}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8D567313-8971-454B-9019-82AC9516D316}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8D567313-8971-454B-9019-82AC9516D316}.Release|Any CPU.Build.0 = Release|Any CPU
+		{19CC6521-64F8-446E-AAB2-D7285B6B06A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{19CC6521-64F8-446E-AAB2-D7285B6B06A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{19CC6521-64F8-446E-AAB2-D7285B6B06A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{19CC6521-64F8-446E-AAB2-D7285B6B06A5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
