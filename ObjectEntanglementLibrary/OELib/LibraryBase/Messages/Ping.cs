@@ -3,7 +3,7 @@
 namespace OELib.LibraryBase.Messages
 {
     [Serializable]
-    public class Ping : Message, IControlMessage
+    public sealed class Ping : Message, IControlMessage
     {
     }
 }

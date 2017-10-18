@@ -1,6 +1,6 @@
 ﻿namespace OELib.LibraryBase
 {
-    public enum Priority
+    public enum Priority : short
     {
         Normal,
         High

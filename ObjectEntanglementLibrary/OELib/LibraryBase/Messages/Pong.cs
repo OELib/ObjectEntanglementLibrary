@@ -3,7 +3,7 @@
 namespace OELib.LibraryBase.Messages
 {
     [Serializable]
-    public class Pong : Message, IControlMessage
+    public sealed class Pong : Message, IControlMessage
     {
     }
 }
