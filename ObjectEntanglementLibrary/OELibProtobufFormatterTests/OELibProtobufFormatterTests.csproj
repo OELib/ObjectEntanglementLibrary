@@ -54,6 +54,7 @@
   <ItemGroup>
     <Compile Include="SerializationTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="OELibWithProtobufTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

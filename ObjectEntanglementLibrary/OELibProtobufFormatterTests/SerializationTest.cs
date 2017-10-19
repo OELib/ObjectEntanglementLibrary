@@ -23,16 +23,16 @@ namespace OELibProtobufFormatterTests
         public void ReadWriteSerializationType()
         {
             var ms = new MemoryStream();
-            _sh.WriteSerializationType(ms, SerializationType.Binary);
-            _sh.WriteSerializationType(ms, SerializationType.Manual);
-            _sh.WriteSerializationType(ms, SerializationType.Protobuf);
+            SerializationHelper.WriteSerializationType(ms, SerializationType.Binary);
+            SerializationHelper.WriteSerializationType(ms, SerializationType.Manual);
+            SerializationHelper.WriteSerializationType(ms, SerializationType.Protobuf);
 
             ms.Seek(0, SeekOrigin.Begin);
-            var st = _sh.ReadSerializationType(ms);
+            var st = SerializationHelper.ReadSerializationType(ms);
             Assert.AreEqual(SerializationType.Binary, st);
-            st = _sh.ReadSerializationType(ms);
+            st = SerializationHelper.ReadSerializationType(ms);
             Assert.AreEqual(SerializationType.Manual, st);
-            st = _sh.ReadSerializationType(ms);
+            st = SerializationHelper.ReadSerializationType(ms);
             Assert.AreEqual(SerializationType.Protobuf, st);
         }
 
@@ -64,9 +64,9 @@ namespace OELibProtobufFormatterTests
         {
             var g = new Guid(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 7, 6, 5, 4, 3, 2, 1, 0 });
             var ms = new MemoryStream();
-            _sh.WriteGuid(ms, g);
+            SerializationHelper.WriteGuid(ms, g);
             ms.Seek(0, SeekOrigin.Begin);
-            var gds = _sh.ReadGuid(ms);
+            var gds = SerializationHelper.ReadGuid(ms);
             Assert.AreEqual(g, gds);
         }
 
@@ -75,15 +75,15 @@ namespace OELibProtobufFormatterTests
         {
             var p = Priority.High;
             var ms = new MemoryStream();
-            _sh.WriteShort(ms, (short)p);
+            SerializationHelper.WriteShort(ms, (short)p);
             ms.Seek(0, SeekOrigin.Begin);
-            var pds = (Priority)_sh.ReadShort(ms);
+            var pds = (Priority)SerializationHelper.ReadShort(ms);
             Assert.AreEqual(p, pds);
             ms.Seek(0, SeekOrigin.Begin);
             p = Priority.Normal;
-            _sh.WriteShort(ms, (short)p);
+            SerializationHelper.WriteShort(ms, (short)p);
             ms.Seek(0, SeekOrigin.Begin);
-            pds = (Priority)_sh.ReadShort(ms);
+            pds = (Priority)SerializationHelper.ReadShort(ms);
             Assert.AreEqual(p, pds);
         }
 
@@ -93,9 +93,9 @@ namespace OELibProtobufFormatterTests
             using (var ms = new MemoryStream())
             {
                 var s = "Test string";
-                _sh.WriteString(ms, s);
+                SerializationHelper.WriteString(ms, s);
                 ms.Seek(0, SeekOrigin.Begin);
-                var sd = _sh.ReadString(ms);
+                var sd = SerializationHelper.ReadString(ms);
                 Assert.AreEqual(s, sd);
             }
         }
