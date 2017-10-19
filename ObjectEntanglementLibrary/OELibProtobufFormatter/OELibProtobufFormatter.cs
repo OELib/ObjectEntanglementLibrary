@@ -10,23 +10,22 @@ namespace OELibProtobufFormatter
     /// </summary>
     public class OELibProtobufFormatter : IFormatter
     {
-        private readonly SerializationHelper _serializationHelper = new SerializationHelper();
+        public SerializationHelper SerializationHelper { get; } = new SerializationHelper();
 
 
         public object Deserialize(Stream serializationStream)
         {
-            var serializationType = _serializationHelper.ReadSerializationType(serializationStream);
+            var serializationType = SerializationHelper.ReadSerializationType(serializationStream);
             switch (serializationType)
             {
                 case SerializationType.Manual:
-                    return _serializationHelper.ManuallyDeserialize(serializationStream);
+                    return SerializationHelper.ManuallyDeserialize(serializationStream);
 
                 case SerializationType.Binary:
-                    break;
-                case SerializationType.Protobuf:
-                    break;
-                
+                    return SerializationHelper.BinaryDeserialize(serializationStream);
                     
+                case SerializationType.Protobuf:
+                    return SerializationHelper.ProtobufDeserialize(serializationStream);
             }
 
             return null;
@@ -34,14 +33,19 @@ namespace OELibProtobufFormatter
 
         public void Serialize(Stream serializationStream, object graph)
         {
-            switch (_serializationHelper.DetermineApproprateSerialization(graph))
+
+            var type = SerializationHelper.DetermineApproprateSerialization(graph);
+            SerializationHelper.WriteSerializationType(serializationStream, type);
+            switch (type)
             {
                 case SerializationType.Manual:
-                    _serializationHelper.ManuallySerialize(serializationStream, graph);
+                    SerializationHelper.ManuallySerialize(serializationStream, graph);
                     break;
                 case SerializationType.Binary:
+                    SerializationHelper.BinarySerialize(serializationStream, graph);
                     break;
                 case SerializationType.Protobuf:
+                    SerializationHelper.ProtobufSerialize(serializationStream, graph);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
