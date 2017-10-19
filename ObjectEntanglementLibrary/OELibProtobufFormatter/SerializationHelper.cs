@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Text;
 using OELib.LibraryBase;
 using OELib.LibraryBase.Messages;
 using ProtoBuf;
@@ -16,11 +18,15 @@ namespace OELibProtobufFormatter
         private readonly HashSet<Guid> _nonProtobufTypes = new HashSet<Guid>(); // known types that are not protobuf enabled
 
         private readonly HashSet<Guid> _protobufTypes = new HashSet<Guid>(); // known protobuf types
+        private BinaryFormatter _bf;
+        
 
 
         public SerializationHelper()
         {
             SetupManualSerData();
+            _bf = new BinaryFormatter();
+            
         }
 
 
@@ -68,18 +74,44 @@ namespace OELibProtobufFormatter
             stream.Write(guidArr, 0, 16);
         }
 
-        public Priority ReadPrio(Stream stream)
+        public short ReadShort(Stream stream)
         {
             var buffer = new byte[2];
             stream.Read(buffer, 0, 2);
-            return (Priority) BitConverter.ToInt16(buffer, 0);
+            return BitConverter.ToInt16(buffer, 0);
         }
 
-        public void WritePrio(Stream stream, Priority priority)
+        public void WriteShort(Stream stream, short data)
         {
-            stream.Write(BitConverter.GetBytes((short) priority), 0, 2);
+            stream.Write(BitConverter.GetBytes(data), 0, 2);
         }
 
+        /// <summary>
+        /// Writes a null-terminated ASCII string to a stream
+        /// </summary>
+        /// <param name="stream">stream to write to</param>
+        /// <param name="str">string to encode</param>
+        public void WriteString(Stream stream, string str)
+        {
+            var b = Encoding.ASCII.GetBytes(str).ToList();
+            b.Add(0);
+            stream.Write(b.ToArray(), 0, b.Count);
+        }
+
+
+        public string ReadString(Stream stream)
+        {
+            var r = new StringBuilder();
+            var c = new byte[1]; //TODO: fix this (it's inefficient)
+            do
+            {
+                stream.Read(c, 0, 1);
+                if (c[0] != 0)
+                    r.Append((char)c[0]);
+            } while (c[0] != 0);
+            return r.ToString();
+        }
+        
 
         public void SetupManualSerData()
         {
@@ -87,15 +119,15 @@ namespace OELibProtobufFormatter
             {
                 var objType = obj.GetType();
                 WriteGuid(stream, objType.GUID);
-                WritePrio(stream, ((Message) obj).Priority);
+                WriteShort(stream, (short)((Message) obj).Priority);
             }
 
             _manualSerDict.Add(typeof(Bye).GUID, new Tuple<Action<Stream, object>, Func<Stream, Guid, object>>(
-                WriteGuidAndPrio, (str, guid) => new Bye {Priority = ReadPrio(str)}));
+                WriteGuidAndPrio, (str, guid) => new Bye {Priority = (Priority)ReadShort(str)}));
             _manualSerDict.Add(typeof(Ping).GUID, new Tuple<Action<Stream, object>, Func<Stream, Guid, object>>(
-                WriteGuidAndPrio, (str, guid) => new Ping {Priority = ReadPrio(str)}));
+                WriteGuidAndPrio, (str, guid) => new Ping {Priority = (Priority)ReadShort(str)}));
             _manualSerDict.Add(typeof(Pong).GUID, new Tuple<Action<Stream, object>, Func<Stream, Guid, object>>(
-                WriteGuidAndPrio, (str, guid) => new Pong {Priority = ReadPrio(str)}));
+                WriteGuidAndPrio, (str, guid) => new Pong {Priority = (Priority)ReadShort(str)}));
             //todo: add manual serializations for poking collection messages
         }
 
@@ -114,5 +146,40 @@ namespace OELibProtobufFormatter
                 throw new InvalidOperationException("Cannot manually serialize this type");
             return _manualSerDict[guid].Item2(stream, guid);
         }
+
+
+        public void BinarySerialize(Stream stream, object obj)
+        {
+            _bf.Serialize(stream, obj);
+        }
+
+        public object BinaryDeserialize(Stream stream)
+        {
+            return _bf.Deserialize(stream);
+        }
+
+        public void ProtobufSerialize(Stream stream, object obj)
+        {
+            var objT = obj.GetType();
+            WriteString(stream, objT.AssemblyQualifiedName); // protobuf deserialize needs to know the type
+            var methodInfo = typeof(Serializer).GetMethods(System.Reflection.BindingFlags.Public |
+                                                           System.Reflection.BindingFlags
+                                                               .Static).Where(mi => mi.Name == "Serialize").FirstOrDefault(mi => mi.GetParameters().Count() == 2 && mi.GetParameters()[0].ParameterType.Name == "Stream" &&
+                             mi.GetParameters()[1].ParameterType.Name == "T"); // todo: how can this be done better
+            var methGenericInfo = methodInfo?.MakeGenericMethod(objT);
+            methGenericInfo?.Invoke(null, new[] {stream, obj});
+        }
+
+        public object ProtobufDeserialize(Stream stream)
+        {
+            var typeName = ReadString(stream);
+            var type = Type.GetType(typeName);
+            var methodInfo = typeof(Serializer).GetMethods(System.Reflection.BindingFlags.Public |
+                                                           System.Reflection.BindingFlags
+                                                               .Static).Where(mi => mi.Name == "Deserialize").FirstOrDefault(mi=>mi.GetParameters().Count() == 2
+                                                               && mi.GetParameters()[0].ParameterType.Name == "Type" && mi.GetParameters()[1].ParameterType.Name == "Stream" );
+            return methodInfo?.Invoke(null, new object[] {type, stream});
+        }
+
     }
 }
