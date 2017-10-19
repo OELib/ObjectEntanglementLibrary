@@ -2,12 +2,15 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.Serialization;
 
 namespace OELib.LibraryBase
 {
     public class CommunicationServer<T> where T : Connection
     {
         private readonly TcpListener _listener;
+
+        public IFormatter Formatter { get; set; } = null;
 
         public CommunicationServer(IPEndPoint localEndPoint)
         {
@@ -40,11 +43,16 @@ namespace OELib.LibraryBase
             _listener.BeginAcceptTcpClient(callback, _listener);
         }
 
+        public void Stop() //todo: check if this really works.
+        {
+            _listener.Stop();
+        }
+
         private void callback(IAsyncResult ar)
         {
             var lisetner = ar.AsyncState as TcpListener; // maybe stupid not to use _listener here?
             TcpClient client;
-            try
+            try //TODO: don't try & catch, check and return.
             {
                 // ReSharper disable once PossibleNullReferenceException
                 client = lisetner.EndAcceptTcpClient(ar);
@@ -66,13 +74,20 @@ namespace OELib.LibraryBase
                 connectionManager.PostWait(() => _connections.Remove(s as T));
                 ClientDisconnected?.Invoke(this, new Tuple<T, Exception>(s as T, e)); //, null, null);
             };
+            try
+            {
+                _listener.BeginAcceptTcpClient(callback, _listener);
+            }
+            catch (InvalidOperationException) { } // server stopped
+            
 
-            _listener.BeginAcceptTcpClient(callback, _listener);
         }
 
         protected virtual T createInstance(TcpClient client)
         {
-            return Activator.CreateInstance(typeof(T), client) as T;
+            var r = Activator.CreateInstance(typeof(T), new object[] { client, null, null, false }) as T; //TODO: there is nothing to guarantee that the constructor accepts this set of arguments. This should be fixed by calling an init method (with all args that are now in ctor) and a constraint on T.
+            if (r != null) r.Formatter = Formatter ?? r.Formatter; //todo: move formatter to init
+            return r;
         }
     }
 }

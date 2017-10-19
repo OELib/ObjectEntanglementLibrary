@@ -18,7 +18,7 @@ namespace OELib.LibraryBase
     {
         private readonly ByteQuantaClient _byteClient;
 
-        private readonly IFormatter _formatter;
+        public IFormatter Formatter { get; set; }
         private readonly ILogger _logger;
         private readonly AutoResetEvent _pingAutoReset = new AutoResetEvent(false);
 
@@ -32,7 +32,7 @@ namespace OELib.LibraryBase
         protected Connection(IFormatter serializer = null, ILogger logger = null,
             bool useCompression = false) //TODO: Complete ILog pattern to suit everyone's need
         {
-            _formatter = serializer ?? new BinaryFormatter();
+            Formatter = serializer ?? new BinaryFormatter();
             _logger = logger;
             _byteClient = new ByteQuantaClient(this, useCompression);
             _byteClient.PartialDataRead += readActivity;
@@ -149,7 +149,7 @@ namespace OELib.LibraryBase
             Message message = null;
             try
             {
-                message = _formatter.Deserialize(ms) as Message;
+                message = Formatter.Deserialize(ms) as Message;
             }
             catch (TargetInvocationException e)
             {
@@ -178,7 +178,7 @@ namespace OELib.LibraryBase
         {
             if (!_byteClient.IsReady) return false;
             var ms = new MemoryStream();
-            _formatter.Serialize(ms, message);
+            Formatter.Serialize(ms, message);
             var length = (int) ms.Position;
             ms.Seek(0, SeekOrigin.Begin);
             var buffer = new byte[length];
