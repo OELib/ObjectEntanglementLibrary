@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -11,6 +12,7 @@ using ProtoBuf;
 
 namespace OELibProtobufFormatter
 {
+
     public class SerializationHelper
     {
         public Dictionary<string, Tuple<Action<Stream, object>, Func<Stream, string, object>>> ManualSerilaizationActions { get; } =
@@ -44,7 +46,7 @@ namespace OELibProtobufFormatter
             stream.Read(t, 0, 1);
             return (SerializationType)t[0];
         }
-
+        [SuppressMessage("ReSharper", "AssignNullToNotNullAttribute")]
         public SerializationType DetermineApproprateSerialization(object obj)
         {
             if (ManualSerilaizationActions.ContainsKey(obj.GetType().AssemblyQualifiedName))
@@ -113,6 +115,7 @@ namespace OELibProtobufFormatter
         }
 
 
+        [SuppressMessage("ReSharper", "AssignNullToNotNullAttribute")]
         public void SetupManualSerData()
         {
             void WritePrio(Stream stream, object obj)
@@ -168,9 +171,36 @@ namespace OELibProtobufFormatter
 
             ));
 
-
+            ManualSerilaizationActions.Add(typeof(CallMethodResponse).AssemblyQualifiedName,
+                new Tuple<Action<Stream, object>, Func<Stream, string, object>>(
+                    (s, o) => // serialization
+                    {
+                        var oo = (CallMethodResponse)o;
+                        WriteGuid(s, oo.MessageID);
+                        WriteGuid(s, oo.CallingMessageID);
+                        WriteShort(s, (short)oo.Priority);
+                        Serialize(s, oo.Response);
+                        Serialize(s, oo.Exception);
+                    },
+                    (s, g) => //deserialization
+                    {
+                        var messageID = ReadGuid(s);
+                        var callingMessageID = ReadGuid(s);
+                        var priority = (Priority)ReadShort(s);
+                        var response = Deserialize(s);
+                        var exception = Deserialize(s);
+                        var r = new CallMethodResponse(new CallMethod("", new object[] { }, null) { MessageID = callingMessageID }, response, exception as Exception)
+                        {
+                            MessageID = messageID,
+                            CallingMessageID = callingMessageID,
+                            Priority = priority
+                        };
+                        return r;
+                    }
+                ));
         }
 
+        [SuppressMessage("ReSharper", "AssignNullToNotNullAttribute")]
         public void ManuallySerialize(Stream stream, object obj)
         {
             if (obj == null) throw new ArgumentNullException();
@@ -210,7 +240,16 @@ namespace OELibProtobufFormatter
                                                                .Static).Where(mi => mi.Name == "Serialize").FirstOrDefault(mi => mi.GetParameters().Count() == 2 && mi.GetParameters()[0].ParameterType.Name == "Stream" &&
                              mi.GetParameters()[1].ParameterType.Name == "T"); // todo: how can this be done better
             var methGenericInfo = methodInfo?.MakeGenericMethod(objT);
-            methGenericInfo?.Invoke(null, new[] { stream, obj });
+
+            using (var ms = new MemoryStream())
+            {
+                methGenericInfo?.Invoke(null, new[] { ms, obj });
+                var len = ms.Position;
+                WriteShort(stream, (short)len);
+                ms.Seek(0, SeekOrigin.Begin);
+                if (len > 0) ms.CopyTo(stream, (int)len);
+            }
+
         }
 
         public object ProtobufDeserialize(Stream stream)
@@ -218,11 +257,17 @@ namespace OELibProtobufFormatter
             //TODO: this is very slow. calls should be cashed
             var typeName = ReadString(stream);
             var type = Type.GetType(typeName);
-            var methodInfo = typeof(Serializer).GetMethods(System.Reflection.BindingFlags.Public |
-                                                           System.Reflection.BindingFlags
-                                                               .Static).Where(mi => mi.Name == "Deserialize").FirstOrDefault(mi => mi.GetParameters().Count() == 2
-                                                               && mi.GetParameters()[0].ParameterType.Name == "Type" && mi.GetParameters()[1].ParameterType.Name == "Stream");
-            return methodInfo?.Invoke(null, new object[] { type, stream });
+            var len = ReadShort(stream);
+            using (var ms = new MemoryStream())
+            {
+                if (len > 0) stream.CopyTo(ms, len);
+                ms.Seek(0, SeekOrigin.Begin);
+                var methodInfo = typeof(Serializer).GetMethods(System.Reflection.BindingFlags.Public |
+                                                               System.Reflection.BindingFlags
+                                                                   .Static).Where(mi => mi.Name == "Deserialize").FirstOrDefault(mi => mi.GetParameters().Count() == 2
+                                                                   && mi.GetParameters()[0].ParameterType.Name == "Type" && mi.GetParameters()[1].ParameterType.Name == "Stream");
+                return methodInfo?.Invoke(null, new object[] { type, ms });
+            }
         }
 
 
