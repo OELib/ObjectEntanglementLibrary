@@ -4,6 +4,7 @@ using System.Net;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OELib.LibraryBase;
+using OELib.PokingConnection.Messages;
 using OELibProtobufFormatter;
 using ProtoBuf;
 
@@ -60,10 +61,10 @@ namespace OELibProtobufFormatterTests
         public void ManualSerialization()
         {
             var fmt1 = new OELibProtobufFormatter.OELibProtobufFormatter();
-            var echoGuid = typeof(Echo).GUID;
-            fmt1.SerializationHelper.ManualSerilaizationActions.Add(echoGuid,
-                new Tuple<Action<System.IO.Stream, object>, Func<System.IO.Stream, Guid, object>>(
-                    (s, o) => { SerializationHelper.WriteGuid(s, echoGuid); }, (s, g) =>
+            var AssemblyQualifiedName = typeof(Echo).AssemblyQualifiedName;
+            fmt1.SerializationHelper.ManualSerilaizationActions.Add(AssemblyQualifiedName,
+                new Tuple<Action<System.IO.Stream, object>, Func<System.IO.Stream, string, object>>(
+                    (s, o) => { SerializationHelper.WriteString(s, AssemblyQualifiedName); }, (s, g) =>
                     {
                         SerializationHelper.ReadGuid(s); return new Echo(); }));
 
@@ -148,6 +149,45 @@ namespace OELibProtobufFormatterTests
             Assert.IsTrue(ok2);
 
         }
+
+
+
+        [TestMethod]
+        public void CallMethodSerialization()
+        {
+            var fmt1 = new OELibProtobufFormatter.OELibProtobufFormatter();
+            var AssemblyQualifiedName = typeof(Echo).AssemblyQualifiedName;
+            fmt1.SerializationHelper.ManualSerilaizationActions.Add(AssemblyQualifiedName,
+                new Tuple<Action<System.IO.Stream, object>, Func<System.IO.Stream, string, object>>(
+                    (s, o) => { SerializationHelper.WriteString(s, AssemblyQualifiedName); }, (s, g) =>
+                    {
+                        SerializationHelper.ReadGuid(s); return new Echo();
+                    }));
+            var go = new AutoResetEvent(false);
+            var server =
+                new CommunicationServer<ServerSideConnection>(new IPEndPoint(IPAddress.Any, 1028))
+                {
+                    Formatter = fmt1
+                };
+            server.Start();
+            server.ClientConnected += (s, e) => go.Set();
+            var client = new ClientSideConnection(fmt1);
+            client.Start("127.0.0.1", 1028);
+            var ok = go.WaitOne(500);
+            Assert.IsTrue(ok);
+            var go2 = new AutoResetEvent(false);
+            client.MessageRecieved += (s, e) =>
+            {
+                if (e is CallMethod) go2.Set();
+            };
+
+            server.Connections.First().SendMessage(new CallMethod("SomeMethodName", new object[]{/*1, 2.2, */"hello call method", /*new Echo(), new Echo2(), new Echo3()*/}, null));
+            var ok2 = go2.WaitOne(500);
+            Assert.IsTrue(ok2);
+        }
+
+
+
 
     }
 }

@@ -92,7 +92,7 @@ namespace OELibProtobufFormatterTests
         {
             using (var ms = new MemoryStream())
             {
-                var s = "Test string";
+                var s = typeof(Bye).AssemblyQualifiedName;
                 SerializationHelper.WriteString(ms, s);
                 ms.Seek(0, SeekOrigin.Begin);
                 var sd = SerializationHelper.ReadString(ms);
