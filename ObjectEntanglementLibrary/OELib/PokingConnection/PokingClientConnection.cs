@@ -5,15 +5,12 @@ namespace OELib.PokingConnection
 {
     public class PokingClientConnection : ReconnectingClientSideConnection, IPokingConnection
     {
-        private object _reactingObject;
-
-        public Reactor Reactor { get; private set; }
+        public Reactor Reactor { get; }
 
         public PokingClientConnection(object reactingObject, IFormatter customFormatter = null, ILogger logger = null, bool useCompression = false)
             : base(customFormatter, logger, useCompression)
         {
-            _reactingObject = reactingObject;
-            Reactor = new Reactor(this, _reactingObject);
+            Reactor = new Reactor(this, reactingObject);
         }
 
         public override bool Start(string IpAddress, int port)

@@ -7,17 +7,17 @@ namespace OELib.PokingConnection
 {
     public class PokingServer : CommunicationServer<PokingServerConnection>
     {
-        private object _reactingObject { get; }
+        private object reactingObject { get; }
 
         public PokingServer(int port, object reactingObject, IFormatter formatter = null, ILogger logger = null, bool useCompression = false)
             : base(new IPEndPoint(IPAddress.Any, port), formatter, logger, useCompression)
         {
-            _reactingObject = reactingObject;
+            this.reactingObject = reactingObject;
         }
 
         protected override PokingServerConnection createInstance(TcpClient client)
         {
-            var c = new PokingServerConnection(client, _reactingObject, Formatter, Logger, UseCompression);
+            var c = new PokingServerConnection(client, reactingObject, Formatter, Logger, UseCompression);
             return c;
         }
     }
