@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -12,6 +13,34 @@ using ProtoBuf;
 
 namespace OELibProtobufFormatter
 {
+
+    public static class StreamUtils
+    {
+        public static byte[] ReadExactly(this Stream stream, int count)
+        {
+            var buffer = new byte[count];
+            var offset = 0;
+            while (offset < count)
+            {
+                var read = stream.Read(buffer, offset, count - offset);
+                if (read == 0)
+                    throw new EndOfStreamException();
+                offset += read;
+            }
+            System.Diagnostics.Debug.Assert(offset == count);
+            return buffer;
+        }
+
+
+        public static void CopyBytesTo(this Stream stream, Stream destination, int count)
+        {
+            var b = stream.ReadExactly(count);
+            destination.Write(b, 0, count);
+        }
+
+
+    }
+
 
     public class SerializationHelper
     {
@@ -35,20 +64,23 @@ namespace OELibProtobufFormatter
 
         public static void WriteSerializationType(Stream stream, SerializationType type)
         {
-            var t = new byte[1];
+            var t = new byte[2];
             t[0] = (byte)type;
-            stream.Write(t, 0, 1);
+            t[1] = (byte)type;
+            stream.Write(t, 0, 2);
         }
 
         public static SerializationType ReadSerializationType(Stream stream)
         {
-            var t = new byte[1];
-            stream.Read(t, 0, 1);
+            var t = stream.ReadExactly(2);
+            if (t[0] != t[1])
+                throw new DataMisalignedException();
             return (SerializationType)t[0];
         }
         [SuppressMessage("ReSharper", "AssignNullToNotNullAttribute")]
         public SerializationType DetermineApproprateSerialization(object obj)
         {
+            if (obj == null) return SerializationType.Manual;
             if (ManualSerilaizationActions.ContainsKey(obj.GetType().AssemblyQualifiedName))
                 return SerializationType.Manual;
             var objType = obj.GetType();
@@ -66,8 +98,7 @@ namespace OELibProtobufFormatter
 
         public static Guid ReadGuid(Stream stream)
         {
-            var b = new byte[16];
-            stream.Read(b, 0, 16);
+            var b = stream.ReadExactly(16);
             return new Guid(b);
         }
 
@@ -79,8 +110,7 @@ namespace OELibProtobufFormatter
 
         public static short ReadShort(Stream stream)
         {
-            var buffer = new byte[2];
-            stream.Read(buffer, 0, 2);
+            var buffer = stream.ReadExactly(2);
             return BitConverter.ToInt16(buffer, 0);
         }
 
@@ -109,8 +139,7 @@ namespace OELibProtobufFormatter
         public static string ReadString(Stream stream)
         {
             var len = ReadShort(stream);
-            var b = new byte[len];
-            stream.Read(b, 0, len);
+            var b = stream.ReadExactly(len);
             return Encoding.Unicode.GetString(b);
         }
 
@@ -130,6 +159,9 @@ namespace OELibProtobufFormatter
                 WritePrio, (str, guid) => new Ping { Priority = (Priority)ReadShort(str) }));
             ManualSerilaizationActions.Add(typeof(Pong).AssemblyQualifiedName, new Tuple<Action<Stream, object>, Func<Stream, string, object>>(
                 WritePrio, (str, guid) => new Pong { Priority = (Priority)ReadShort(str) }));
+            ManualSerilaizationActions.Add("null", new Tuple<Action<Stream, object>, Func<Stream, string, object>>(
+                (s, e) => { }, (str, guid) => null));
+
 
             //poking connection messages
             ManualSerilaizationActions.Add(typeof(CallMethod).AssemblyQualifiedName,
@@ -203,17 +235,18 @@ namespace OELibProtobufFormatter
         [SuppressMessage("ReSharper", "AssignNullToNotNullAttribute")]
         public void ManuallySerialize(Stream stream, object obj)
         {
-            if (obj == null) throw new ArgumentNullException();
-            var objType = obj.GetType();
-            if (!ManualSerilaizationActions.ContainsKey(objType.AssemblyQualifiedName ?? ""))
+            string name;
+            name = obj == null ? "null" : obj.GetType().AssemblyQualifiedName;
+            if (!ManualSerilaizationActions.ContainsKey(name))
                 throw new InvalidOperationException("Cannot manually serialize this type");
-            WriteString(stream, obj.GetType().AssemblyQualifiedName);
-            ManualSerilaizationActions[objType.AssemblyQualifiedName].Item1(stream, obj);
+            WriteString(stream, name);
+            ManualSerilaizationActions[name].Item1(stream, obj);
         }
 
         public object ManuallyDeserialize(Stream stream)
         {
             var assemblyQualifiedName = ReadString(stream);
+            //Console.WriteLine($"Man deser: name{assemblyQualifiedName}.");
             if (!ManualSerilaizationActions.ContainsKey(assemblyQualifiedName))
                 throw new InvalidOperationException("Cannot manually deserialize this type");
             return ManualSerilaizationActions[assemblyQualifiedName].Item2(stream, assemblyQualifiedName);
@@ -232,6 +265,7 @@ namespace OELibProtobufFormatter
 
         public void ProtobufSerialize(Stream stream, object obj)
         {
+            
             //TODO: this is very slow. calls should be cashed
             var objT = obj.GetType();
             WriteString(stream, objT.AssemblyQualifiedName); // protobuf deserialize needs to know the type
@@ -245,9 +279,19 @@ namespace OELibProtobufFormatter
             {
                 methGenericInfo?.Invoke(null, new[] { ms, obj });
                 var len = ms.Position;
+                Debug.WriteLine($"Protobuf serialzed {obj} to {len} bytes.");
                 WriteShort(stream, (short)len);
                 ms.Seek(0, SeekOrigin.Begin);
-                if (len > 0) ms.CopyTo(stream, (int)len);
+                var a = stream.Position;
+                if (len > 0) ms.CopyBytesTo(stream, (int)len);
+                var b = stream.Position;
+                Debug.Assert(a == b - len);
+                ms.Seek(0, SeekOrigin.Begin);
+                byte[] bb = new byte[len];
+                ms.Read(bb, 0, (int)len);
+                Debug.WriteLine($"Serializing type name {objT.AssemblyQualifiedName} this: " + bb.Select(bs => bs.ToString()).Aggregate((f, s) => f + "," + s));
+
+
             }
 
         }
@@ -255,25 +299,48 @@ namespace OELibProtobufFormatter
         public object ProtobufDeserialize(Stream stream)
         {
             //TODO: this is very slow. calls should be cashed
+
             var typeName = ReadString(stream);
             var type = Type.GetType(typeName);
             var len = ReadShort(stream);
-            using (var ms = new MemoryStream())
+            Debug.WriteLine($"Protobuf deserializing {type} from {len} bytes.");
+            using (var ms = new MemoryStream(len){ Capacity = len })
             {
-                if (len > 0) stream.CopyTo(ms, len);
+                var a = stream.Position;
+                if (len > 0) stream.CopyBytesTo(ms, len);
+                stream.Position = a + len;
+                var b = stream.Position;
+                Debug.Assert(a == b - len);
+                ms.Seek(0, SeekOrigin.Begin);
+                byte[] bb = new byte[len];
+                ms.Read(bb, 0, (int)len);
+                Debug.WriteLine("Deserializing this: " + bb.Select(bs => bs.ToString()).Aggregate((f, s) => f + "," + s) + $" To type {typeName}");
+
                 ms.Seek(0, SeekOrigin.Begin);
                 var methodInfo = typeof(Serializer).GetMethods(System.Reflection.BindingFlags.Public |
                                                                System.Reflection.BindingFlags
-                                                                   .Static).Where(mi => mi.Name == "Deserialize").FirstOrDefault(mi => mi.GetParameters().Count() == 2
-                                                                   && mi.GetParameters()[0].ParameterType.Name == "Type" && mi.GetParameters()[1].ParameterType.Name == "Stream");
-                return methodInfo?.Invoke(null, new object[] { type, ms });
+                                                                   .Static).Where(mi => mi.Name == "Deserialize")
+                    .FirstOrDefault(mi => mi.GetParameters().Count() == 2
+                                          && mi.GetParameters()[0].ParameterType.Name == "Type" &&
+                                          mi.GetParameters()[1].ParameterType.Name == "Stream");
+
+                try
+                {
+                    return methodInfo?.Invoke(null, new object[] { type, ms });
+                }
+                catch (Exception ex)
+                {
+                    throw;
+                }
             }
+
         }
 
 
         public object Deserialize(Stream serializationStream)
         {
             var serializationType = ReadSerializationType(serializationStream);
+            //Console.WriteLine($"Deserializing a message of type {serializationType}");
             switch (serializationType)
             {
                 case SerializationType.Manual:
@@ -291,8 +358,9 @@ namespace OELibProtobufFormatter
 
         public void Serialize(Stream serializationStream, object graph)
         {
-
+            //Console.WriteLine($"Serializing {graph?.ToString()}");
             var type = DetermineApproprateSerialization(graph);
+            //Console.WriteLine($"Serializing type {graph?.ToString()}, ser type {type}.");
             WriteSerializationType(serializationStream, type);
             switch (type)
             {
