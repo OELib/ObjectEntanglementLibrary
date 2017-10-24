@@ -1,6 +1,7 @@
 ﻿#define _DEBUGOUTPUT
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Net.Sockets;
 using System.Reflection;
@@ -149,13 +150,21 @@ namespace OELib.LibraryBase
             Message message = null;
             try
             {
+#if (DEBUGOUTPUT)
+                Debug.WriteLine($"Client {Name} connection got a message with formatter {Formatter.ToString()}.");
+#endif
                 message = Formatter.Deserialize(ms) as Message;
             }
             catch (TargetInvocationException e)
             {
                 _logger?.Error($"TargetInvocationException when processing message: {e}");
             }
-
+#if (DEBUGOUTPUT)
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Client {Name} deserialization error {ex}");
+            }
+#endif
             if (message != null)
                 if (message is IControlMessage) controlMessageReceived?.Invoke(this, message as IControlMessage);
                 else MessageRecieved?.Invoke(this, message);
@@ -178,6 +187,9 @@ namespace OELib.LibraryBase
         {
             if (!_byteClient.IsReady) return false;
             var ms = new MemoryStream();
+#if (DEBUGOUTPUT)
+            Debug.WriteLine($"Client {Name} connection sending message {message.ToString()} with formatter {Formatter.ToString()}.");
+#endif
             Formatter.Serialize(ms, message);
             var length = (int) ms.Position;
             ms.Seek(0, SeekOrigin.Begin);

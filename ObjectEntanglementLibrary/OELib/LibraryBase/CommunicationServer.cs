@@ -10,12 +10,21 @@ namespace OELib.LibraryBase
     {
         private readonly TcpListener _listener;
 
-        public IFormatter Formatter { get; set; } = null;
+        public IFormatter Formatter { get; set; }
+        public ILogger Logger { get; set; }
+        public bool UseCompression { get; set; }
 
-        public CommunicationServer(IPEndPoint localEndPoint)
+        public CommunicationServer(IPEndPoint localEndPoint, IFormatter formatter = null, ILogger logger = null, bool useCompression = false)
         {
+
+            Formatter = formatter;
+            Logger = logger;
+            UseCompression = useCompression;
             _listener = new TcpListener(localEndPoint);
         }
+
+        
+
 
         private Actor connectionManager { get; } = new Actor();
 
@@ -85,8 +94,7 @@ namespace OELib.LibraryBase
 
         protected virtual T createInstance(TcpClient client)
         {
-            var r = Activator.CreateInstance(typeof(T), new object[] { client, null, null, false }) as T; //TODO: there is nothing to guarantee that the constructor accepts this set of arguments. This should be fixed by calling an init method (with all args that are now in ctor) and a constraint on T.
-            if (r != null) r.Formatter = Formatter ?? r.Formatter; //todo: move formatter to init
+            var r = Activator.CreateInstance(typeof(T), new object[] { client, Formatter, Logger, UseCompression }) as T; //TODO: there is nothing to guarantee that the constructor accepts this set of arguments. This should be fixed by calling an init method (with all args that are now in ctor) and a constraint on T.
             return r;
         }
     }

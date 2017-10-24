@@ -10,8 +10,7 @@ namespace OELib.LibraryBase
         protected string _remoteIp = "";
         protected int _remotePort;
 
-        public ClientSideConnection(IFormatter customFormatter = null, ILogger logger = null,
-            bool useCompression = false)
+        public ClientSideConnection(IFormatter customFormatter = null, ILogger logger = null, bool useCompression = false)
             : base(customFormatter, logger, useCompression)
         {
             Name = $"Cli. Conn. {_connectionNo++}";

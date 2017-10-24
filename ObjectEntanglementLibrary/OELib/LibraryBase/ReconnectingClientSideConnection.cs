@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.Serialization;
 using System.Timers;
 
 namespace OELib.LibraryBase
@@ -7,7 +8,8 @@ namespace OELib.LibraryBase
     {
         private readonly Timer _reconnectTimer = new Timer(500);
 
-        public ReconnectingClientSideConnection()
+        public ReconnectingClientSideConnection(IFormatter customFormatter = null, ILogger logger = null, bool useCompression = false)
+            : base(customFormatter, logger, useCompression)
         {
             _reconnectTimer.Elapsed += _reconnectTimer_Elapsed;
             Stopped += startReconnectingTimer;
