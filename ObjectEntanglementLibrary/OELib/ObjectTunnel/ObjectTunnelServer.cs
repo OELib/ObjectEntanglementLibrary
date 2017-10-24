@@ -1,33 +1,47 @@
-﻿using OELib.PokingConnection;
-using System;
+﻿using System;
+using System.Net;
+using OELib.LibraryBase.Messages;
+using OELib.LibraryBase;
 
-namespace OELib.PokingConnection.ObjectTunnel
+
+namespace OELib.PokingConnection.ObjectTunnel //todo: change namespace
 {
     public class ObjectTunnelServer
     {
-        private int _port;
-        private PokingServer _server;
+        private readonly CommunicationServer<ServerSideConnection> _server;
 
         public ObjectTunnelServer(int port)
         {
-            _port = port;
-            _server = new PokingServer(_port, this);
+            _server = new CommunicationServer<ServerSideConnection>(new IPEndPoint(IPAddress.Parse("127.0.0.1"), port));
             _server.Start();
+            _server.ClientConnected += _server_ClientConnected;
+
+        }
+
+
+        private void _server_ClientConnected(object sender, ServerSideConnection e)
+        {
+            e.MessageRecieved += E_MessageRecieved;
+        }
+
+        private void E_MessageRecieved(object sender, Message e)
+        {
+            var oc = e as ObjectCarrier;
+            ObjectReceived?.Invoke(this, oc == null ? e : oc.Payload);
         }
 
         public event EventHandler<object> ObjectReceived;
 
-        public void ReceiveObject(object objectIn)
-        {
-            if (ObjectReceived != null) ObjectReceived(this, objectIn);
-        }
 
         public void SendObject<T>(T objectOut)
         {
+            var m = objectOut as Message ?? new ObjectCarrier() { Payload = objectOut };
             _server.Connections.ForEach(c =>
                 {
-                    c.Reactor.CallRemoteMethod("ReceiveObject", objectOut);
+                    c.SendMessage(m);
                 });
         }
     }
+
+   
 }

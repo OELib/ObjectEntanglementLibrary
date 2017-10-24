@@ -61,6 +61,7 @@
     <Compile Include="LibraryBase\PriorityQueue.cs" />
     <Compile Include="LibraryBase\ReconnectingClientSideConnection.cs" />
     <Compile Include="LibraryBase\ServerSideConnection.cs" />
+    <Compile Include="ObjectTunnel\ObjectCarrier.cs" />
     <Compile Include="ObjectTunnel\ObjectTunnelClient.cs" />
     <Compile Include="ObjectTunnel\ObjectTunnelServer.cs" />
     <Compile Include="PokingConnection\Messages\CallMethod.cs" />
