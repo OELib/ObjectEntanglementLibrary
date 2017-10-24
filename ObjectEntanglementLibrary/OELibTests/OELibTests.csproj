@@ -56,6 +56,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PriorityQueueTest.cs" />
     <Compile Include="ActorTests.cs" />
+    <Compile Include="ObjectTunnelTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OELib\OELib.csproj">
