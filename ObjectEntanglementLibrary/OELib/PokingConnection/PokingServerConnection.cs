@@ -1,6 +1,7 @@
 ﻿using OELib.LibraryBase;
 using System;
 using System.Net.Sockets;
+using System.Runtime.Serialization;
 
 namespace OELib.PokingConnection
 {
@@ -8,8 +9,8 @@ namespace OELib.PokingConnection
     {
         public Reactor Reactor { get; protected set; }
 
-        public PokingServerConnection(TcpClient client, object reactingObject)
-            : base()
+        public PokingServerConnection(TcpClient client, object reactingObject, IFormatter formatter = null, ILogger logger = null, bool useCompression = false)
+            : base(formatter, logger, useCompression)
         {
             Reactor = new Reactor(this, reactingObject);
             if (Start(client)) Reactor.Start();

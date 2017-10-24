@@ -1,4 +1,5 @@
-﻿using OELib.LibraryBase;
+﻿using System.Runtime.Serialization;
+using OELib.LibraryBase;
 
 namespace OELib.PokingConnection
 {
@@ -8,7 +9,8 @@ namespace OELib.PokingConnection
 
         public Reactor Reactor { get; private set; }
 
-        public PokingClientConnection(object reactingObject)
+        public PokingClientConnection(object reactingObject, IFormatter customFormatter = null, ILogger logger = null, bool useCompression = false)
+            : base(customFormatter, logger, useCompression)
         {
             _reactingObject = reactingObject;
             Reactor = new Reactor(this, _reactingObject);
