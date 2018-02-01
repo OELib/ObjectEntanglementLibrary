@@ -1,6 +1,7 @@
-﻿#define _DEBUGOUTPUT
+﻿#define DEBUGOUTPUT
 
 using System;
+using System.Diagnostics;
 using System.Net.Sockets;
 using System.Threading;
 using OELib.LibraryBase.Messages;

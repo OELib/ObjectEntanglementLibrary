@@ -1,4 +1,4 @@
-﻿#define _DEBUGOUTPUT
+﻿#define DEBUGOUTPUT
 
 using System;
 using System.Diagnostics;
@@ -119,7 +119,7 @@ namespace OELib.LibraryBase
                 _pingAutoReset.Set();
             }
             if (message is Bye)
-                Stop(new Exception("Graceful goodbye."));
+                Stop(new Exception($" {Name} Graceful goodbye."));
         }
 
         protected virtual void pingTimerElapsed(object sender, ElapsedEventArgs e)
