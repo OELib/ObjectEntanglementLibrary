@@ -1,47 +1,44 @@
 ﻿using System;
 using System.Net;
-using OELib.LibraryBase.Messages;
+using System.Net.Sockets;
+using System.Runtime.Serialization;
+using System.Threading.Tasks;
 using OELib.LibraryBase;
+using System.Collections.Concurrent;
+using System.Linq;
 
-
-namespace OELib.PokingConnection.ObjectTunnel //todo: change namespace
+namespace OELib.ObjectTunnel
 {
-    public class ObjectTunnelServer
+    public class ObjectTunnelServer : CommunicationServer<ObjectTunnelServerConnection>, IObjectTunnelConnection
     {
-        private readonly CommunicationServer<ServerSideConnection> _server;
-
-        public ObjectTunnelServer(int port)
-        {
-            _server = new CommunicationServer<ServerSideConnection>(new IPEndPoint(IPAddress.Parse("127.0.0.1"), port));
-            _server.Start();
-            _server.ClientConnected += _server_ClientConnected;
-
-        }
-
-
-        private void _server_ClientConnected(object sender, ServerSideConnection e)
-        {
-            e.MessageRecieved += E_MessageRecieved;
-        }
-
-        private void E_MessageRecieved(object sender, Message e)
-        {
-            var oc = e as ObjectCarrier;
-            ObjectReceived?.Invoke(this, oc == null ? e : oc.Payload);
-        }
 
         public event EventHandler<object> ObjectReceived;
 
-
-        public void SendObject<T>(T objectOut)
+        public ObjectTunnelServer(IPEndPoint localEndPoint, IFormatter formatter = null, ILogger logger = null, bool useCompression = false)
+            : base(localEndPoint, formatter, logger, useCompression)
         {
-            var m = objectOut as Message ?? new ObjectCarrier() { Payload = objectOut };
-            _server.Connections.ForEach(c =>
-                {
-                    c.SendMessage(m);
-                });
+        }
+
+        protected override ObjectTunnelServerConnection createInstance(TcpClient client)
+        {
+            var r = new ObjectTunnelServerConnection(client, Formatter, Logger, UseCompression) { Name = "Server side connection", PingInterval=10000};
+            r.ObjectReceived += R_ObjectRecieved;
+            return r;
+        }
+
+        private void R_ObjectRecieved(object sender, object e)
+        {
+            ObjectReceived?.Invoke(sender, e);
+        }
+
+        public bool SendObject<T>(T objectToSend)
+        {
+            var results = new ConcurrentBag<bool>();
+            Parallel.ForEach(Connections, c =>
+            {
+                if (c.IsReady) results.Add(c.SendObject(objectToSend));
+            });
+            return results.ToArray().All(r => r);
         }
     }
-
-   
 }

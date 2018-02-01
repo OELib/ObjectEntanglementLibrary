@@ -1,7 +1,7 @@
 ﻿using System;
 using OELib.LibraryBase.Messages;
 
-namespace OELib.PokingConnection.ObjectTunnel //todo: change namespace
+namespace OELib.ObjectTunnel
 {
     [Serializable]
     public class ObjectCarrier : Message

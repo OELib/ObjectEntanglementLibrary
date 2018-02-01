@@ -1,4 +1,4 @@
-﻿#define DEBUGOUTPUT
+﻿#define _DEBUGOUTPUT
 
 using System;
 using System.Diagnostics;

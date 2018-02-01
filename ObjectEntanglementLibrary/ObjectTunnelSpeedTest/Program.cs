@@ -3,12 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using OELib.LibraryBase.Messages;
-using OELib.PokingConnection.ObjectTunnel;
-using OELibTests;
+using OELib.ObjectTunnel;
 
 
 namespace ObjectTunnelSpeedTest
@@ -30,15 +26,15 @@ namespace ObjectTunnelSpeedTest
 
         public static double MeasureTime(int port, object msg, int repetitions)
         {
-            var server = new ObjectTunnelServer(1044);
-            var client = new ObjectTunnelClient(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 1044));
+            var server = new ObjectTunnelServer(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 1044));
+            var client = new ObjectTunnelClientConnection();
             var go1 = new AutoResetEvent(false);
             var go2 = new AutoResetEvent(false);
-            client.Connected += (s, e) =>
+            client.Started += (s, e) =>
             {
                 go1.Set();
             };
-            client.StartConnectionAttempts();
+            client.Start("127.0.0.1", 1044);
             go1.WaitOne(1000);
             List<object> recvd = new List<object>();
             client.ObjectReceived += (s, o) =>
