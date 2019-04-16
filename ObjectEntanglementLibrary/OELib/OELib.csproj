@@ -43,6 +43,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FileTunnel\IFileTunnelConnection.cs" />
+    <Compile Include="FileTunnel\FileCarrier.cs" />
+    <Compile Include="FileTunnel\FileTunnelClientConnection.cs" />
+    <Compile Include="FileTunnel\FileTunnelServer.cs" />
+    <Compile Include="FileTunnel\FileTunnelServerConnection.cs" />
     <Compile Include="LibraryBase\ByteQuantaClient.cs" />
     <Compile Include="LibraryBase\ClientSideConnection.cs" />
     <Compile Include="LibraryBase\CommunicationServer.cs" />
