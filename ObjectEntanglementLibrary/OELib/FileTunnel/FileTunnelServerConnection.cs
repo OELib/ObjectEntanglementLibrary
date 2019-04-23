@@ -7,7 +7,7 @@ namespace OELib.FileTunnel
 {
     public class FileTunnelServerConnection : ServerSideConnection, IFileTunnelConnection
     {
-        public event EventHandler<object> FileReceived;
+        public event EventHandler<MessageCarrier> MessageCarrierReceived;
 
         public FileTunnelServerConnection(TcpClient client, IFormatter customFormatter = null, ILogger logger = null,
             bool useCompression = false)
@@ -23,13 +23,13 @@ namespace OELib.FileTunnel
 
         private void FileTunnelClientConnection_MessageRecieved(object sender, LibraryBase.Messages.Message e)
         {
-            if (e is FileCarrier carrier) FileReceived?.Invoke(this, carrier.Payload);
+            MessageCarrierReceived?.Invoke(this, e as MessageCarrier);
         }
 
-        public bool SendFile<T>(T fileToSend)
+        public bool SendMessageCarrier<T>(T messageCarrier)
         {
-            var pl = new FileCarrier() { Payload = fileToSend };
-            return SendMessage(pl);
+            MessageCarrier mc = messageCarrier as MessageCarrier;
+            return SendMessage(mc);
         }
     }
 }

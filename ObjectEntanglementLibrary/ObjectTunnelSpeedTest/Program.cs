@@ -27,6 +27,7 @@ namespace ObjectTunnelSpeedTest
         public static double MeasureTime(int port, object msg, int repetitions)
         {
             var server = new ObjectTunnelServer(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 1044));
+            server.Start();
             var client = new ObjectTunnelClientConnection();
             var go1 = new AutoResetEvent(false);
             var go2 = new AutoResetEvent(false);

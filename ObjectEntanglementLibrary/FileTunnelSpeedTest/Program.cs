@@ -4,8 +4,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Threading;
+using OELib.ObjectTunnel;
 using OELib.FileTunnel;
-
+using System.IO;
 
 namespace FileTunnelSpeedTest
 {
@@ -13,45 +14,43 @@ namespace FileTunnelSpeedTest
     {
         static void Main(string[] args)
         {
-            var tp1 = new MassivePayload1()
-            {
-                DD = Enumerable.Range(0, 5000).Select(i => (double) i).ToArray(),
-                II = Enumerable.Range(0, 5000).Select(i => i).ToArray(),
-                S = Enumerable.Range(0, 5000).Select(i => i.ToString()).Aggregate((f, s) => f + " - " + s)
-            };
-            Console.WriteLine($"Sending 200 messages took {MeasureTime(1024, tp1, 200)} ms.");
+            // string filePathAndName = @"C:\Users\ari\test.txt";
+            string filePathAndName = @"C:\Users\ari\ReportBuilder3.msi";
+
+            TestFileTransfer(1044, filePathAndName);
             Console.ReadLine();
         }
+        
+        public static FileDownloader fd1;
+        public static FileDownloader fd2;
+        public static FileDownloader fd3;
 
-
-        public static double MeasureTime(int port, object msg, int repetitions)
+        public static void TestFileTransfer(int port, string filePathAndName)
         {
-            var server = new FileTunnelServer(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 1044));
-            var client = new FileTunnelClientConnection();
-            var go1 = new AutoResetEvent(false);
-            var go2 = new AutoResetEvent(false);
-            client.Started += (s, e) =>
-            {
-                go1.Set();
-            };
-            client.Start("127.0.0.1", 1044);
-            go1.WaitOne(1000);
-            List<object> recvd = new List<object>();
-            client.FileReceived += (s, o) =>
-            {
+            FileServer fileServer = new FileServer("127.0.0.1", port);
+            Thread.Sleep(1000);
 
-                recvd.Add(o);
-                if (recvd.Count == repetitions-1)
-                    go2.Set();
-            };
-            var sw = Stopwatch.StartNew();
-            for (int i = 0; i < repetitions; i++)
-                server.SendFile(msg);
-            go2.WaitOne(100000);
-            sw.Stop();
-            return sw.ElapsedMilliseconds;
+            fd1 = new FileDownloader("127.0.0.1", port, @"C:\Users\ari\received\fd1\");
+            fd2 = new FileDownloader("127.0.0.1", port, @"C:\Users\ari\received\fd2\");
+            fd3 = new FileDownloader("127.0.0.1", port, @"C:\Users\ari\received\fd3\");
+
+            Thread.Sleep(1000);
+
+            // These should succeed if server responds (fire and forget)
+                fd1.DownloadRequest(filePathAndName);
+                fd2.DownloadRequest(filePathAndName);
+                fd3.DownloadRequest(filePathAndName);
+
+            // This should wait forever since thread is blocked until server responds
+            // fd1.Download(filePathAndName);
+
+            Thread.Sleep(1000);
+
+            while (fileServer.RequestStack.Count > 0)
+            {
+                fileServer.RequestStack.PopAndProcess();
+            }
         }
-
-
     }
 }
+
