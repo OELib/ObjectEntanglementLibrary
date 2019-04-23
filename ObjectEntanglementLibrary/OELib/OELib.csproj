@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FileTunnel\FileDownloader.cs" />
+    <Compile Include="FileTunnel\FileServer.cs" />
     <Compile Include="FileTunnel\MessageCarrier.cs" />
     <Compile Include="FileTunnel\FileRequestStack.cs" />
     <Compile Include="FileTunnel\FileTunnelClientConnection.cs" />

@@ -14,8 +14,7 @@ namespace FileTunnelSpeedTest
     {
         static void Main(string[] args)
         {
-            // string filePathAndName = @"C:\Users\ari\test.txt";
-            string filePathAndName = @"C:\Users\ari\ReportBuilder3.msi";
+            string filePathAndName = @"C:\Users\ari\test.txt";
 
             TestFileTransfer(1044, filePathAndName);
             Console.ReadLine();
