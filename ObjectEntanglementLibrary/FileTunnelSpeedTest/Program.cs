@@ -14,9 +14,13 @@ namespace FileTunnelSpeedTest
     {
         static void Main(string[] args)
         {
-            string filePathAndName = @"C:\Users\ari\test.txt";
+            string fileName = "test.txt";
+            string serverDirectory = @"C:\Users\ari\TestFileServer\";
 
-            TestFileTransfer(1044, filePathAndName);
+            //TestFileTransfer(1044, fileName, serverDirectory);
+
+            TestListFiles(1044, serverDirectory);
+
             Console.ReadLine();
         }
         
@@ -24,21 +28,21 @@ namespace FileTunnelSpeedTest
         public static FileDownloader fd2;
         public static FileDownloader fd3;
 
-        public static void TestFileTransfer(int port, string filePathAndName)
+        public static void TestFileTransfer(int port, string fileName, string serverDirectory)
         {
-            FileServer fileServer = new FileServer("127.0.0.1", port);
+            FileServer fileServer = new FileServer("127.0.0.1", port, serverDirectory);
             Thread.Sleep(1000);
 
-            fd1 = new FileDownloader("127.0.0.1", port, @"C:\Users\ari\received\fd1\");
-            fd2 = new FileDownloader("127.0.0.1", port, @"C:\Users\ari\received\fd2\");
-            fd3 = new FileDownloader("127.0.0.1", port, @"C:\Users\ari\received\fd3\");
+            fd1 = new FileDownloader("127.0.0.1", port, @"C:\Users\ari\TestFileServer\received\fd1\");
+            fd2 = new FileDownloader("127.0.0.1", port, @"C:\Users\ari\TestFileServer\received\fd2\");
+            fd3 = new FileDownloader("127.0.0.1", port, @"C:\Users\ari\TestFileServer\received\fd3\");
 
             Thread.Sleep(1000);
 
             // These should succeed if server responds (fire and forget)
-                fd1.DownloadRequest(filePathAndName);
-                fd2.DownloadRequest(filePathAndName);
-                fd3.DownloadRequest(filePathAndName);
+                fd1.DownloadRequest(serverDirectory + fileName);
+                fd2.DownloadRequest(serverDirectory + fileName);
+                fd3.DownloadRequest(serverDirectory + fileName);
 
             // This should wait forever since thread is blocked until server responds
             // fd1.Download(filePathAndName);
@@ -49,6 +53,22 @@ namespace FileTunnelSpeedTest
             {
                 fileServer.RequestStack.PopAndProcess();
             }
+        }
+
+        public static void TestListFiles(int port, string serverDirectory)
+        {
+            FileServer fileServer = new FileServer("127.0.0.1", port, serverDirectory);
+            Thread.Sleep(1000);
+
+            fd1 = new FileDownloader("127.0.0.1", port, @"C:\Users\ari\TestFileServer\received\fd1\");
+
+            Thread.Sleep(1000);
+
+            var fileList = new List<string>();
+            fd1.ListFiles(serverDirectory, out fileList);
+
+            foreach (string s in fileList)
+                Console.WriteLine(s);
         }
     }
 }

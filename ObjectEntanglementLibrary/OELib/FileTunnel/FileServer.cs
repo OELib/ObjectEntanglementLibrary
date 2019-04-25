@@ -12,12 +12,14 @@ namespace OELib.FileTunnel
     {
         public FileTunnelServer FileTunnelServer { get; set; }
         public FileRequestStack RequestStack { get; set; }
+        public string CurrentDirectory { get; set; }
 
-        public FileServer(string ip, int port)
+        public FileServer(string ip, int port, string currentDirectory)
         {
             FileTunnelServer = new FileTunnelServer(new IPEndPoint(IPAddress.Parse("127.0.0.1"), port));
             FileTunnelServer.Start();
 
+            CurrentDirectory = currentDirectory;
             RequestStack = new FileRequestStack();
 
             FileTunnelServer.MessageCarrierReceived += OnServerMessageCarrierReceived;
@@ -30,6 +32,13 @@ namespace OELib.FileTunnel
         {
             if (mc.Type == MessageType.FileRequest)
                 RequestStack.Push(sender as FileTunnelServerConnection, mc.Payload as string);
+
+            if (mc.Type == MessageType.ListFilesRequest)
+            {
+                var ftsc = sender as FileTunnelServerConnection;
+                var fileList = Directory.GetFiles(mc.Payload as string).ToList();
+                ftsc.SendMessageCarrier(new MessageCarrier(MessageType.ListFilesResponse) { Payload = fileList });
+            }
         }
 
         public void OnServerFileNotFound(object sender, FileRequestEventArgs e)

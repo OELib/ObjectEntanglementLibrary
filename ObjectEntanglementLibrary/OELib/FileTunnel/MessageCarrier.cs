@@ -3,7 +3,7 @@ using OELib.LibraryBase.Messages;
 
 namespace OELib.FileTunnel
 {
-    public enum MessageType {Object, FileRequest, FileNotFound, FileContents, AvailableFilesRequest, AvailableFilesResponse }
+    public enum MessageType {Object, FileRequest, FileNotFound, FileContents, ListFilesRequest, ListFilesResponse }
 
     [Serializable]
     public class MessageCarrier : Message
