@@ -12,33 +12,29 @@ namespace FileTunnelSpeedTest
 {
     class Program
     {
+        static string TestReceiveDirectory = @"C:\Users\ari\TestFileServer\received\fd1\";
+        static string TestServerDirectory = @"C:\Users\ari\TestFileServer\";
+        static string TestFile = "test.txt";
+
         static void Main(string[] args)
         {
-            TestFileTransfer(1044, "test.txt", @"C:\Users\ari\TestFileServer\");
-            TestListFiles(1044, @"C:\Users\ari\TestFileServer\");
+            TestListFiles(1044, TestServerDirectory);
+            TestFileTransfer(1044, TestFile, TestServerDirectory);
 
             Console.ReadLine();
         }
-        
-        public static FileDownloader fd1;
-        public static FileDownloader fd2;
-        public static FileDownloader fd3;
 
         public static void TestFileTransfer(int port, string fileName, string serverDirectory)
         {
             FileServer fileServer = new FileServer("127.0.0.1", port);
             Thread.Sleep(1000);
 
-            fd1 = new FileDownloader("127.0.0.1", port, @"C:\Users\ari\TestFileServer\received\fd1\");
-            fd2 = new FileDownloader("127.0.0.1", port, @"C:\Users\ari\TestFileServer\received\fd2\");
-            fd3 = new FileDownloader("127.0.0.1", port, @"C:\Users\ari\TestFileServer\received\fd3\");
+            var fd1 = new FileDownloader("127.0.0.1", port, TestReceiveDirectory);
 
             Thread.Sleep(1000);
 
-            // These should succeed if server responds (fire and forget)
-                fd1.DownloadRequest(serverDirectory + fileName);
-                fd2.DownloadRequest(serverDirectory + fileName);
-                fd3.DownloadRequest(serverDirectory + fileName);
+            // This should succeed if server responds (fire and forget)
+            fd1.DownloadRequest(serverDirectory + fileName);
 
             // This should wait forever since thread is blocked until server responds
             // fd1.Download(filePathAndName);
@@ -56,7 +52,7 @@ namespace FileTunnelSpeedTest
             FileServer fileServer = new FileServer("127.0.0.1", port);
             Thread.Sleep(1000);
 
-            fd1 = new FileDownloader("127.0.0.1", port, @"C:\Users\ari\TestFileServer\received\fd1\");
+            var fd1 = new FileDownloader("127.0.0.1", port, TestReceiveDirectory);
             Thread.Sleep(1000);
 
             var fileList = new List<string>();
