@@ -24,7 +24,7 @@ namespace OELib.FileTunnel
         {
             FileTunnelClient = new FileTunnelClientConnection();
             FileTunnelClient.Start(ipAddress, port);
-            DownloadDirectory = downloadDirectory;          // eg @"C:\Users\ari\received\"
+            DownloadDirectory = downloadDirectory;
             FileTunnelClient.MessageCarrierReceived += OnClientMessageCarrierReceived;
         }
 

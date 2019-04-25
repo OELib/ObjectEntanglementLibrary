@@ -61,7 +61,6 @@ namespace FileTunnelSpeedTest
             Thread.Sleep(1000);
 
             fd1 = new FileDownloader("127.0.0.1", port, @"C:\Users\ari\TestFileServer\received\fd1\");
-
             Thread.Sleep(1000);
 
             var fileList = new List<string>();
