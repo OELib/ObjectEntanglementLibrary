@@ -37,6 +37,17 @@ namespace OELib.FileTunnel
                 var fileList = Directory.GetFiles(mc.Payload as string).ToList();
                 ftsc.SendMessageCarrier(new MessageCarrier(MessageType.ListFilesResponse) { Payload = fileList });
             }
+
+            if (mc.Type == MessageType.ListDirectoriesRequest)
+            {
+                var ftsc = sender as FileTunnelServerConnection;
+                var directoryList = Directory.GetDirectories(mc.Payload as string).ToList();
+
+                for (int i = 0; i < directoryList.Count; i++)
+                    directoryList[i] = directoryList[i] + "\\";
+
+                ftsc.SendMessageCarrier(new MessageCarrier(MessageType.ListDirectoriesResponse) { Payload = directoryList });
+            }
         }
 
         public void OnServerFileNotFound(object sender, FileRequestEventArgs e)

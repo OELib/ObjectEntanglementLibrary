@@ -14,11 +14,13 @@ namespace OELib.FileTunnel
         public string DownloadDirectory { get; set; }
         public bool LastReceiveFileSuccess { get; protected set; }
         public List<string> LastReceivedFileList { get; protected set; }
+        public List<string> LastReceivedDirectoriesList { get; private set; }
 
         private string _lastRequestedFile = "";
 
         ManualResetEvent mreDownload = new ManualResetEvent(false);
         ManualResetEvent mreListFiles = new ManualResetEvent(false);
+        ManualResetEvent mreListDirectories = new ManualResetEvent(false);
 
         public FileDownloader(string ipAddress, int port, string downloadDirectory)
         {
@@ -31,8 +33,6 @@ namespace OELib.FileTunnel
         /// <summary>
         /// Send a file download request. Server responds when it feels like it.
         /// </summary>
-        /// <param name="remoteFilePathAndName"></param>
-        /// <returns></returns>
         public bool DownloadRequest(string remoteFilePathAndName)
         {
             _lastRequestedFile = Path.GetFileName(remoteFilePathAndName);
@@ -43,8 +43,6 @@ namespace OELib.FileTunnel
         /// <summary>
         /// Send a file download request. Block until file/response has arrived.
         /// </summary>
-        /// <param name="remoteFilePathAndName"></param>
-        /// <returns></returns>
         public bool Download(string remoteFilePathAndName)
         {
             mreDownload.Reset();
@@ -58,8 +56,6 @@ namespace OELib.FileTunnel
         /// <summary>
         /// Send a file list request. Server responds when it feels like it.
         /// </summary>
-        /// <param name="remotePath"></param>
-        /// <returns></returns>
         public bool ListFilesRequest(string remotePath)
         {
             return FileTunnelClient.SendMessageCarrier(new MessageCarrier(MessageType.ListFilesRequest) { Payload = remotePath });
@@ -68,9 +64,6 @@ namespace OELib.FileTunnel
         /// <summary>
         /// Send a file list request. Block until response has arrived.
         /// </summary>
-        /// <param name="remotePath"></param>
-        /// <param name="remoteFiles"></param>
-        /// <returns></returns>
         public bool ListFiles(string remotePath, out List<string> remoteFiles)
         {
             mreListFiles.Reset();
@@ -78,6 +71,27 @@ namespace OELib.FileTunnel
             if (!sendSuccess) { remoteFiles = null; return false; }
             mreListFiles.WaitOne();
             remoteFiles = LastReceivedFileList;
+            return sendSuccess;
+        }
+
+        /// <summary>
+        /// Send a list directories request. Server responds when it feels like it.
+        /// </summary>
+        public bool ListDirectoriesRequest(string remotePath)
+        {
+            return FileTunnelClient.SendMessageCarrier(new MessageCarrier(MessageType.ListDirectoriesRequest) { Payload = remotePath });
+        }
+
+        /// <summary>
+        /// Send a list directories request. Block until response has arrived.
+        /// </summary>
+        public bool ListDirectories(string remotePath, out List<string> remoteDirectories)
+        {
+            mreListDirectories.Reset();
+            bool sendSuccess = FileTunnelClient.SendMessageCarrier(new MessageCarrier(MessageType.ListDirectoriesRequest) { Payload = remotePath });
+            if (!sendSuccess) { remoteDirectories = null; return false; }
+            mreListDirectories.WaitOne();
+            remoteDirectories = LastReceivedDirectoriesList;
             return sendSuccess;
         }
 
@@ -108,6 +122,12 @@ namespace OELib.FileTunnel
             {
                 LastReceivedFileList = mc.Payload as List<string>;
                 mreListFiles.Set();
+            }
+
+            if (mc.Type == MessageType.ListDirectoriesResponse)
+            {
+                LastReceivedDirectoriesList = mc.Payload as List<string>;
+                mreListDirectories.Set();
             }
         }
     }
