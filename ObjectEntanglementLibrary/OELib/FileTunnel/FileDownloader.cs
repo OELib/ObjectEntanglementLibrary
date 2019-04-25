@@ -50,8 +50,9 @@ namespace OELib.FileTunnel
             mreDownload.Reset();
             _lastRequestedFile = Path.GetFileName(remoteFilePathAndName);
             bool sendSuccess = FileTunnelClient.SendMessageCarrier(new MessageCarrier(MessageType.FileRequest) { Payload = remoteFilePathAndName });
+            if (!sendSuccess) return false;
             mreDownload.WaitOne();
-            return (sendSuccess && LastReceiveFileSuccess);
+            return LastReceiveFileSuccess;
         }
 
         /// <summary>
@@ -74,6 +75,7 @@ namespace OELib.FileTunnel
         {
             mreListFiles.Reset();
             bool sendSuccess = FileTunnelClient.SendMessageCarrier(new MessageCarrier(MessageType.ListFilesRequest) { Payload = remotePath });
+            if (!sendSuccess) { remoteFiles = null; return false; }
             mreListFiles.WaitOne();
             remoteFiles = LastReceivedFileList;
             return sendSuccess;

@@ -14,12 +14,8 @@ namespace FileTunnelSpeedTest
     {
         static void Main(string[] args)
         {
-            string fileName = "test.txt";
-            string serverDirectory = @"C:\Users\ari\TestFileServer\";
-
-            //TestFileTransfer(1044, fileName, serverDirectory);
-
-            TestListFiles(1044, serverDirectory);
+            TestFileTransfer(1044, "test.txt", @"C:\Users\ari\TestFileServer\");
+            TestListFiles(1044, @"C:\Users\ari\TestFileServer\");
 
             Console.ReadLine();
         }
@@ -30,7 +26,7 @@ namespace FileTunnelSpeedTest
 
         public static void TestFileTransfer(int port, string fileName, string serverDirectory)
         {
-            FileServer fileServer = new FileServer("127.0.0.1", port, serverDirectory);
+            FileServer fileServer = new FileServer("127.0.0.1", port);
             Thread.Sleep(1000);
 
             fd1 = new FileDownloader("127.0.0.1", port, @"C:\Users\ari\TestFileServer\received\fd1\");
@@ -57,7 +53,7 @@ namespace FileTunnelSpeedTest
 
         public static void TestListFiles(int port, string serverDirectory)
         {
-            FileServer fileServer = new FileServer("127.0.0.1", port, serverDirectory);
+            FileServer fileServer = new FileServer("127.0.0.1", port);
             Thread.Sleep(1000);
 
             fd1 = new FileDownloader("127.0.0.1", port, @"C:\Users\ari\TestFileServer\received\fd1\");

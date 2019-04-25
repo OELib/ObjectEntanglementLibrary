@@ -12,14 +12,12 @@ namespace OELib.FileTunnel
     {
         public FileTunnelServer FileTunnelServer { get; set; }
         public FileRequestStack RequestStack { get; set; }
-        public string CurrentDirectory { get; set; }
 
-        public FileServer(string ip, int port, string currentDirectory)
+        public FileServer(string ip, int port)
         {
             FileTunnelServer = new FileTunnelServer(new IPEndPoint(IPAddress.Parse("127.0.0.1"), port));
             FileTunnelServer.Start();
 
-            CurrentDirectory = currentDirectory;
             RequestStack = new FileRequestStack();
 
             FileTunnelServer.MessageCarrierReceived += OnServerMessageCarrierReceived;
