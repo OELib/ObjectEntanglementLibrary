@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FileTunnel\FileProperties.cs" />
     <Compile Include="FileTunnel\FileDownloader.cs" />
     <Compile Include="FileTunnel\FileServer.cs" />
     <Compile Include="FileTunnel\MessageCarrier.cs" />

@@ -6,7 +6,8 @@ namespace OELib.FileTunnel
     public enum MessageType {   Object, FileNotFound,
                                 FileRequest, FileContents,
                                 ListFilesRequest, ListFilesResponse,
-                                ListDirectoriesRequest, ListDirectoriesResponse}
+                                ListDirectoriesRequest, ListDirectoriesResponse,
+                                FilePropertiesRequest, FilePropertiesResponse}
 
     [Serializable]
     public class MessageCarrier : Message

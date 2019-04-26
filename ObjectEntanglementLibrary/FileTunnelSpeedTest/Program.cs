@@ -12,35 +12,38 @@ namespace FileTunnelSpeedTest
 {
     class Program
     {
-        static string TestReceiveDirectory = @"C:\Users\ari\TestFileServer\received\fd1\";
-        static string TestServerDirectory = @"C:\Users\ari\TestFileServer\";
+        static string TestReceiveDirectory = @"C:\Users\ari\TestFileServer\received\";
+        static string TestServerRootDirectory = @"C:\Users\ari\TestFileServer\";
+
+        static string TestServerSubDirectory = @"\";
         static string TestFile = "test.txt";
 
         static void Main(string[] args)
         {
-            //Console.WriteLine("TestListFiles");
-            //TestListFiles(1044, TestServerDirectory);
-
-            //Console.WriteLine("\n\nTestListDirectories");
-            //TestListDirectories(1044, TestServerDirectory);
+            FileServer fileServer = new FileServer("127.0.0.1", 1044, TestServerRootDirectory);
+            Thread.Sleep(1000);
+            var fileDownloader = new FileDownloader("127.0.0.1", 1044, TestReceiveDirectory);
+            Thread.Sleep(1000);
 
             Console.WriteLine("\n\nTestFileTransfer");
-            TestFileTransfer(1044, TestFile, TestServerDirectory);
+            TestFileTransfer(fileServer, fileDownloader, TestServerSubDirectory, TestFile);
+
+            Console.WriteLine("\n\nTestListFiles");
+            TestListFiles(fileDownloader, TestServerSubDirectory);
+
+            Console.WriteLine("\n\nTestListDirectories");
+            TestListDirectories(fileDownloader, TestServerSubDirectory);
+
+            Console.WriteLine("\n\nTestListProperties");
+            TestListFileProperties(fileDownloader, TestServerSubDirectory, TestFile);
 
             Console.ReadLine();
         }
 
-        public static void TestFileTransfer(int port, string fileName, string serverDirectory)
+        public static void TestFileTransfer(FileServer fileServer, FileDownloader fileDownloader, string serverDirectory, string fileName)
         {
-            FileServer fileServer = new FileServer("127.0.0.1", port);
-            Thread.Sleep(1000);
-
-            var fd1 = new FileDownloader("127.0.0.1", port, TestReceiveDirectory);
-
-            Thread.Sleep(1000);
-
             // This should succeed if server responds (fire and forget)
-            fd1.DownloadRequest(serverDirectory + fileName);
+            fileDownloader.DownloadRequest(serverDirectory + fileName);
 
             // This should wait forever since thread is blocked until server responds
             // fd1.Download(filePathAndName);
@@ -48,39 +51,32 @@ namespace FileTunnelSpeedTest
             Thread.Sleep(1000);
 
             while (fileServer.RequestStack.Count > 0)
-            {
                 fileServer.RequestStack.PopAndProcess();
-            }
         }
 
-        public static void TestListFiles(int port, string serverDirectory)
+        public static void TestListFiles(FileDownloader fileDownloader, string serverDirectory)
         {
-            FileServer fileServer = new FileServer("127.0.0.1", port);
-            Thread.Sleep(1000);
-
-            var fd1 = new FileDownloader("127.0.0.1", port, TestReceiveDirectory);
-            Thread.Sleep(1000);
-
-            var fileList = new List<string>();
-            fd1.ListFiles(serverDirectory, out fileList);
+            fileDownloader.ListFiles(serverDirectory, out var fileList);
 
             foreach (string s in fileList)
                 Console.WriteLine(s);
         }
 
-        public static void TestListDirectories(int port, string serverDirectory)
+        public static void TestListDirectories(FileDownloader fileDownloader, string serverDirectory)
         {
-            FileServer fileServer = new FileServer("127.0.0.1", port);
-            Thread.Sleep(1000);
-
-            var fd1 = new FileDownloader("127.0.0.1", port, TestReceiveDirectory);
-            Thread.Sleep(1000);
-
-            var directoryList = new List<string>();
-            fd1.ListDirectories(serverDirectory, out directoryList);
+            fileDownloader.ListDirectories(serverDirectory, out var directoryList);
 
             foreach (string s in directoryList)
                 Console.WriteLine(s);
+        }
+
+        public static void TestListFileProperties(FileDownloader fileDownloader, string serverDirectory, string fileName)
+        {
+            fileDownloader.GetFileProperties(serverDirectory + fileName, out var fileProperties);
+
+            Console.WriteLine("Modified: " + fileProperties.Modified_String());
+            Console.WriteLine("Size: " + fileProperties.Size_String());
+            Console.WriteLine("MD5 Hash: " + fileProperties.MD5Hash_String());
         }
     }
 }

@@ -15,12 +15,14 @@ namespace OELib.FileTunnel
         public bool LastReceiveFileSuccess { get; protected set; }
         public List<string> LastReceivedFileList { get; protected set; }
         public List<string> LastReceivedDirectoriesList { get; private set; }
+        public FileProperties LastReceivedFileProperties { get; private set; }
 
         private string _lastRequestedFile = "";
 
         ManualResetEvent mreDownload = new ManualResetEvent(false);
         ManualResetEvent mreListFiles = new ManualResetEvent(false);
         ManualResetEvent mreListDirectories = new ManualResetEvent(false);
+        ManualResetEvent mreListFileProperties = new ManualResetEvent(false);
 
         public FileDownloader(string ipAddress, int port, string downloadDirectory)
         {
@@ -58,6 +60,7 @@ namespace OELib.FileTunnel
         /// </summary>
         public bool ListFilesRequest(string remotePath)
         {
+            LastReceivedFileList = null;
             return FileTunnelClient.SendMessageCarrier(new MessageCarrier(MessageType.ListFilesRequest) { Payload = remotePath });
         }
 
@@ -66,6 +69,7 @@ namespace OELib.FileTunnel
         /// </summary>
         public bool ListFiles(string remotePath, out List<string> remoteFiles)
         {
+            LastReceivedFileList = null;
             mreListFiles.Reset();
             bool sendSuccess = FileTunnelClient.SendMessageCarrier(new MessageCarrier(MessageType.ListFilesRequest) { Payload = remotePath });
             if (!sendSuccess) { remoteFiles = null; return false; }
@@ -79,6 +83,7 @@ namespace OELib.FileTunnel
         /// </summary>
         public bool ListDirectoriesRequest(string remotePath)
         {
+            LastReceivedDirectoriesList = null;
             return FileTunnelClient.SendMessageCarrier(new MessageCarrier(MessageType.ListDirectoriesRequest) { Payload = remotePath });
         }
 
@@ -87,6 +92,7 @@ namespace OELib.FileTunnel
         /// </summary>
         public bool ListDirectories(string remotePath, out List<string> remoteDirectories)
         {
+            LastReceivedDirectoriesList = null;
             mreListDirectories.Reset();
             bool sendSuccess = FileTunnelClient.SendMessageCarrier(new MessageCarrier(MessageType.ListDirectoriesRequest) { Payload = remotePath });
             if (!sendSuccess) { remoteDirectories = null; return false; }
@@ -95,12 +101,39 @@ namespace OELib.FileTunnel
             return sendSuccess;
         }
 
+        /// <summary>
+        /// Send a get file properties request. Block until response has arrived.
+        /// </summary>
+        public bool GetFileProperties(string remoteFilePathAndName, out FileProperties properties)
+        {
+            LastReceivedFileProperties = null;
+            mreListFileProperties.Reset();
+            bool sendSuccess = FileTunnelClient.SendMessageCarrier(new MessageCarrier(MessageType.FilePropertiesRequest) { Payload = remoteFilePathAndName });
+            if (!sendSuccess) { properties = null; return false; }
+            mreListFileProperties.WaitOne();
+            
+            if (LastReceivedFileProperties != null)
+            {
+                properties = LastReceivedFileProperties;
+                return true;
+            }
+
+            else
+            {
+                properties = null;
+                return false;
+            }
+        }
+
         public void OnClientMessageCarrierReceived(object sender, MessageCarrier mc)
         {
             if (mc.Type == MessageType.FileNotFound)
             {
                 LastReceiveFileSuccess = false;
                 mreDownload.Set();
+                mreListFiles.Set();
+                mreListDirectories.Set();
+                mreListFileProperties.Set();
             }
 
             if (mc.Type == MessageType.FileContents)
@@ -128,6 +161,12 @@ namespace OELib.FileTunnel
             {
                 LastReceivedDirectoriesList = mc.Payload as List<string>;
                 mreListDirectories.Set();
+            }
+
+            if (mc.Type == MessageType.FilePropertiesResponse)
+            {
+                LastReceivedFileProperties = mc.Payload as FileProperties;
+                mreListFileProperties.Set();
             }
         }
     }
