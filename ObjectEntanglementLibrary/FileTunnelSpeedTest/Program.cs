@@ -12,6 +12,8 @@ namespace FileTunnelSpeedTest
 {
     class Program
     {
+        // directories must end with \
+
         static string TestReceiveDirectory = @"C:\Users\ari\TestFileServer\received\";
         static string TestServerRootDirectory = @"C:\Users\ari\TestFileServer\";
 
