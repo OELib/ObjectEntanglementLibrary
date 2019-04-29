@@ -12,17 +12,21 @@ namespace OELib.FileTunnel
     {
         public FileTunnelClientConnection FileTunnelClient { get; set; }
         public string DownloadDirectory { get; set; }
-        public bool LastReceiveFileSuccess { get; protected set; }
-        public List<string> LastReceivedFileList { get; protected set; }
-        public List<string> LastReceivedDirectoriesList { get; private set; }
-        public FileProperties LastReceivedFileProperties { get; private set; }
+
+        private bool _lastResponseFileNotFound;
+        private bool _lastReceiveFileSuccess;
+        private List<string> _lastReceivedFileList;
+        private List<string> _lastReceivedDirectoriesList;
+        private FileProperties _lastReceivedFileProperties;
+
+        private Action<string> WatcherFileModified;
 
         private string _lastRequestedFile = "";
 
-        ManualResetEvent mreDownload = new ManualResetEvent(false);
-        ManualResetEvent mreListFiles = new ManualResetEvent(false);
-        ManualResetEvent mreListDirectories = new ManualResetEvent(false);
-        ManualResetEvent mreListFileProperties = new ManualResetEvent(false);
+        private ManualResetEvent mreDownload = new ManualResetEvent(false);
+        private ManualResetEvent mreListFiles = new ManualResetEvent(false);
+        private ManualResetEvent mreListDirectories = new ManualResetEvent(false);
+        private ManualResetEvent mreListFileProperties = new ManualResetEvent(false);
 
         public FileDownloader(string ipAddress, int port, string downloadDirectory)
         {
@@ -30,6 +34,8 @@ namespace OELib.FileTunnel
             FileTunnelClient.Start(ipAddress, port);
             DownloadDirectory = downloadDirectory;
             FileTunnelClient.MessageCarrierReceived += OnClientMessageCarrierReceived;
+
+            _lastResponseFileNotFound = false;
         }
 
         /// <summary>
@@ -52,7 +58,7 @@ namespace OELib.FileTunnel
             bool sendSuccess = FileTunnelClient.SendMessageCarrier(new MessageCarrier(MessageType.FileRequest) { Payload = remoteFilePathAndName });
             if (!sendSuccess) return false;
             mreDownload.WaitOne();
-            return LastReceiveFileSuccess;
+            return _lastReceiveFileSuccess;
         }
 
         /// <summary>
@@ -60,7 +66,7 @@ namespace OELib.FileTunnel
         /// </summary>
         public bool ListFilesRequest(string remotePath)
         {
-            LastReceivedFileList = null;
+            _lastReceivedFileList = null;
             return FileTunnelClient.SendMessageCarrier(new MessageCarrier(MessageType.ListFilesRequest) { Payload = remotePath });
         }
 
@@ -69,12 +75,12 @@ namespace OELib.FileTunnel
         /// </summary>
         public bool ListFiles(string remotePath, out List<string> remoteFiles)
         {
-            LastReceivedFileList = null;
+            _lastReceivedFileList = null;
             mreListFiles.Reset();
             bool sendSuccess = FileTunnelClient.SendMessageCarrier(new MessageCarrier(MessageType.ListFilesRequest) { Payload = remotePath });
             if (!sendSuccess) { remoteFiles = null; return false; }
             mreListFiles.WaitOne();
-            remoteFiles = LastReceivedFileList;
+            remoteFiles = _lastReceivedFileList;
             return sendSuccess;
         }
 
@@ -83,7 +89,7 @@ namespace OELib.FileTunnel
         /// </summary>
         public bool ListDirectoriesRequest(string remotePath)
         {
-            LastReceivedDirectoriesList = null;
+            _lastReceivedDirectoriesList = null;
             return FileTunnelClient.SendMessageCarrier(new MessageCarrier(MessageType.ListDirectoriesRequest) { Payload = remotePath });
         }
 
@@ -92,12 +98,12 @@ namespace OELib.FileTunnel
         /// </summary>
         public bool ListDirectories(string remotePath, out List<string> remoteDirectories)
         {
-            LastReceivedDirectoriesList = null;
+            _lastReceivedDirectoriesList = null;
             mreListDirectories.Reset();
             bool sendSuccess = FileTunnelClient.SendMessageCarrier(new MessageCarrier(MessageType.ListDirectoriesRequest) { Payload = remotePath });
             if (!sendSuccess) { remoteDirectories = null; return false; }
             mreListDirectories.WaitOne();
-            remoteDirectories = LastReceivedDirectoriesList;
+            remoteDirectories = _lastReceivedDirectoriesList;
             return sendSuccess;
         }
 
@@ -106,15 +112,15 @@ namespace OELib.FileTunnel
         /// </summary>
         public bool GetFileProperties(string remoteFilePathAndName, out FileProperties properties)
         {
-            LastReceivedFileProperties = null;
+            _lastReceivedFileProperties = null;
             mreListFileProperties.Reset();
             bool sendSuccess = FileTunnelClient.SendMessageCarrier(new MessageCarrier(MessageType.FilePropertiesRequest) { Payload = remoteFilePathAndName });
             if (!sendSuccess) { properties = null; return false; }
             mreListFileProperties.WaitOne();
             
-            if (LastReceivedFileProperties != null)
+            if (_lastReceivedFileProperties != null)
             {
-                properties = LastReceivedFileProperties;
+                properties = _lastReceivedFileProperties;
                 return true;
             }
 
@@ -125,15 +131,36 @@ namespace OELib.FileTunnel
             }
         }
 
-        public void OnClientMessageCarrierReceived(object sender, MessageCarrier mc)
+        public bool WatchDirectory(Action<string> modified)
         {
+            bool sendSuccess = FileTunnelClient.SendMessageCarrier(new MessageCarrier(MessageType.WatchDirectoryRequest));
+
+            if (sendSuccess)
+            {
+                WatcherFileModified = modified;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public void OnClientMessageCarrierReceived(object sender, MessageCarrier mc)
+        {            
             if (mc.Type == MessageType.FileNotFound)
             {
-                LastReceiveFileSuccess = false;
+                _lastResponseFileNotFound = true;
+                _lastReceiveFileSuccess = false;
                 mreDownload.Set();
                 mreListFiles.Set();
                 mreListDirectories.Set();
                 mreListFileProperties.Set();
+            }
+
+            else
+            {
+                _lastResponseFileNotFound = false;
             }
 
             if (mc.Type == MessageType.FileContents)
@@ -141,11 +168,11 @@ namespace OELib.FileTunnel
                 try
                 {
                     File.WriteAllBytes(DownloadDirectory + _lastRequestedFile, mc.Payload as byte[]);
-                    LastReceiveFileSuccess = true;
+                    _lastReceiveFileSuccess = true;
                 }
                 catch (Exception ex)
                 {
-                    LastReceiveFileSuccess = false;
+                    _lastReceiveFileSuccess = false;
                 }
 
                 mreDownload.Set();
@@ -153,20 +180,25 @@ namespace OELib.FileTunnel
 
             if (mc.Type == MessageType.ListFilesResponse)
             {
-                LastReceivedFileList = mc.Payload as List<string>;
+                _lastReceivedFileList = mc.Payload as List<string>;
                 mreListFiles.Set();
             }
 
             if (mc.Type == MessageType.ListDirectoriesResponse)
             {
-                LastReceivedDirectoriesList = mc.Payload as List<string>;
+                _lastReceivedDirectoriesList = mc.Payload as List<string>;
                 mreListDirectories.Set();
             }
 
             if (mc.Type == MessageType.FilePropertiesResponse)
             {
-                LastReceivedFileProperties = mc.Payload as FileProperties;
+                _lastReceivedFileProperties = mc.Payload as FileProperties;
                 mreListFileProperties.Set();
+            }
+
+            if (mc.Type == MessageType.WatcherFileModified)
+            {
+                WatcherFileModified.Invoke(mc.Payload as string);
             }
         }
     }

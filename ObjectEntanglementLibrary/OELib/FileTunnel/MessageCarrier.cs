@@ -7,7 +7,8 @@ namespace OELib.FileTunnel
                                 FileRequest, FileContents,
                                 ListFilesRequest, ListFilesResponse,
                                 ListDirectoriesRequest, ListDirectoriesResponse,
-                                FilePropertiesRequest, FilePropertiesResponse}
+                                FilePropertiesRequest, FilePropertiesResponse,
+                                WatchDirectoryRequest, WatcherFileModified}
 
     [Serializable]
     public class MessageCarrier : Message

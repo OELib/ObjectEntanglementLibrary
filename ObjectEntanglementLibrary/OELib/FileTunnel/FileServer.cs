@@ -5,32 +5,113 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 
 namespace OELib.FileTunnel
 {
     public class FileServer
     {
         public FileTunnelServer FileTunnelServer { get; set; }
-        public FileRequestStack RequestStack { get; set; }
+        private FileRequestStack _fileTransferRequestStack;
         public string RootDirectory { get; set; }
+
+        Timer _fileTransferAutoProcessTimer = new Timer(1000);
+        private bool _fileTransferAutoProcess;
+        public bool FileTransferAutoProcess
+        {
+            get
+            {
+                return _fileTransferAutoProcess;
+            }
+            set
+            {
+                _fileTransferAutoProcess = value;
+                _fileTransferAutoProcessTimer.Enabled = _fileTransferAutoProcess;
+            }
+        }
+
+        Timer _directoryWatcherTimer = new Timer(1000);
+        private FileSystemWatcher _directoryWatcher;
+        private List<FileTunnelServerConnection> _directoryWatcherSubscribers;
+
+        // _directoryWatcherPending is needed because filesystemwatcher often fires twice when files are changed, known issue
+        // Responses are only added here if they are not already in this list
+        private Stack<MessageCarrier> _directoryWatcherPending = new Stack<MessageCarrier>();
 
         public FileServer(string ip, int port, string rootDirectory)
         {
             FileTunnelServer = new FileTunnelServer(new IPEndPoint(IPAddress.Parse("127.0.0.1"), port));
             FileTunnelServer.Start();
 
-            RequestStack = new FileRequestStack();
+            _fileTransferRequestStack = new FileRequestStack();
             RootDirectory = rootDirectory;
 
+            _fileTransferAutoProcessTimer.Elapsed += OnFileTransferTimerEvent;
+            _fileTransferAutoProcessTimer.AutoReset = true;
+            FileTransferAutoProcess = false;
+
+            _directoryWatcherTimer.Elapsed += OnDirectoryWatcherTimerEvent;
+            _directoryWatcherTimer.AutoReset = true;
+            _directoryWatcherTimer.Enabled = true;
+
+            _directoryWatcher = new FileSystemWatcher();
+            _directoryWatcher.Path = RootDirectory;
+            _directoryWatcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName;
+            _directoryWatcher.Created += OnDirectoryWatcherChanged;
+            _directoryWatcher.Changed += OnDirectoryWatcherChanged;
+            _directoryWatcher.Renamed += OnDirectoryWatcherChanged;
+
             FileTunnelServer.MessageCarrierReceived += OnServerMessageCarrierReceived;
-            RequestStack.SendFile += OnServerSendFile;
-            RequestStack.FileNotFound += OnServerFileNotFound;
+            _fileTransferRequestStack.SendFile += OnServerSendFile;
+            _fileTransferRequestStack.FileNotFound += OnServerFileNotFound;
         }
 
-        public void OnServerMessageCarrierReceived(object sender, MessageCarrier mc)
+        private void OnFileTransferTimerEvent(object source, ElapsedEventArgs e)
+        {
+            ProcessAllFileTransferRequests();
+        }
+
+        private void ProcessAllFileTransferRequests()
+        {
+            while (_fileTransferRequestStack.Count > 0)
+                _fileTransferRequestStack.PopAndProcess();
+        }
+
+        private void OnDirectoryWatcherTimerEvent(object sender, ElapsedEventArgs e)
+        {
+            ProcessAllDirectoryWatcherRequests();
+        }
+
+        private void ProcessAllDirectoryWatcherRequests()
+        {
+            while (_directoryWatcherPending.Count > 0)
+            {
+                var mc = _directoryWatcherPending.Pop();
+
+                foreach (var ftsc in _directoryWatcherSubscribers)
+                {
+                    ftsc.SendMessageCarrier(mc);
+                }
+            }
+        }
+
+        private void OnDirectoryWatcherChanged(object source, FileSystemEventArgs e)
+        {
+            var clientSidePathAndName = e.FullPath.Replace(RootDirectory, "");
+
+            if (e.ChangeType == WatcherChangeTypes.Changed || e.ChangeType == WatcherChangeTypes.Created || e.ChangeType == WatcherChangeTypes.Renamed)
+            {
+                var mc = new MessageCarrier(MessageType.WatcherFileModified) { Payload = clientSidePathAndName };
+
+                if (_directoryWatcherPending.Any(p => (string)p.Payload == clientSidePathAndName) == false)
+                    _directoryWatcherPending.Push(mc);
+            }
+        }
+
+        private void OnServerMessageCarrierReceived(object sender, MessageCarrier mc)
         {
             if (mc.Type == MessageType.FileRequest)
-                RequestStack.Push(sender as FileTunnelServerConnection, AddPaths(RootDirectory, mc.Payload as string));
+                _fileTransferRequestStack.Push(sender as FileTunnelServerConnection, AddPaths(RootDirectory, mc.Payload as string));
 
             if (mc.Type == MessageType.ListFilesRequest)
             {
@@ -53,7 +134,7 @@ namespace OELib.FileTunnel
             if (mc.Type == MessageType.ListDirectoriesRequest)
             {
                 var ftsc = sender as FileTunnelServerConnection;
-                
+
                 try
                 {
                     // Run this just to throw exception if path doesn't exist
@@ -89,14 +170,27 @@ namespace OELib.FileTunnel
                     ftsc.SendMessageCarrier(new MessageCarrier(MessageType.FileNotFound) { Payload = (mc.Payload as string) });
                 }
             }
+
+            if (mc.Type == MessageType.WatchDirectoryRequest)
+            {
+                var ftsc = sender as FileTunnelServerConnection;
+
+                if (_directoryWatcherSubscribers == null)
+                    _directoryWatcherSubscribers = new List<FileTunnelServerConnection>();
+
+                _directoryWatcherSubscribers.Add(ftsc);
+
+                if (_directoryWatcher.EnableRaisingEvents == false)
+                    _directoryWatcher.EnableRaisingEvents = true;
+            }
         }
 
-        public void OnServerFileNotFound(object sender, FileRequestEventArgs e)
+        private void OnServerFileNotFound(object sender, FileRequestEventArgs e)
         {
             e.Connection.SendMessageCarrier(new MessageCarrier(MessageType.FileNotFound) { Payload = e.FilePathAndName });
         }
 
-        public void OnServerSendFile(object sender, FileRequestEventArgs e)
+        private void OnServerSendFile(object sender, FileRequestEventArgs e)
         {
             FileStream fs = new FileStream(e.FilePathAndName, FileMode.Open, FileAccess.Read);
             byte[] bytes = File.ReadAllBytes(e.FilePathAndName);
