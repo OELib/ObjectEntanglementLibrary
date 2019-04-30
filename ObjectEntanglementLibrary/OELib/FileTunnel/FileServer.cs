@@ -16,19 +16,6 @@ namespace OELib.FileTunnel
         public string RootDirectory { get; set; }
 
         Timer _fileTransferAutoProcessTimer = new Timer(1000);
-        private bool _fileTransferAutoProcess;
-        public bool FileTransferAutoProcess
-        {
-            get
-            {
-                return _fileTransferAutoProcess;
-            }
-            set
-            {
-                _fileTransferAutoProcess = value;
-                _fileTransferAutoProcessTimer.Enabled = _fileTransferAutoProcess;
-            }
-        }
 
         Timer _directoryWatcherTimer = new Timer(1000);
         private FileSystemWatcher _directoryWatcher;
@@ -48,7 +35,7 @@ namespace OELib.FileTunnel
 
             _fileTransferAutoProcessTimer.Elapsed += OnFileTransferTimerEvent;
             _fileTransferAutoProcessTimer.AutoReset = true;
-            FileTransferAutoProcess = false;
+            _fileTransferAutoProcessTimer.Enabled = true;
 
             _directoryWatcherTimer.Elapsed += OnDirectoryWatcherTimerEvent;
             _directoryWatcherTimer.AutoReset = true;

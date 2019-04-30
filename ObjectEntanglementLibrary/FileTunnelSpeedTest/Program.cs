@@ -46,7 +46,6 @@ namespace FileTunnelSpeedTest
             Console.ReadLine();
 
             FileServer fileServer = new FileServer("127.0.0.1", 1044, TestServerRootDirectory);
-            fileServer.FileTransferAutoProcess = true;
             Thread.Sleep(1000);
 
             var fileDownloader1 = new FileDownloader("127.0.0.1", 1044, TestReceiveDirectory);
