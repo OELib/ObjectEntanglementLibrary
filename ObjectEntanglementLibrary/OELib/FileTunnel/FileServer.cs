@@ -13,7 +13,7 @@ namespace OELib.FileTunnel
     {
         public FileTunnelServer FileTunnelServer { get; set; }
         private FileRequestStack _fileTransferRequestStack;
-        public string RootDirectory { get; set; }
+        public string RootDirectory { get; private set; }
 
         Timer _fileTransferAutoProcessTimer = new Timer(1000);
 

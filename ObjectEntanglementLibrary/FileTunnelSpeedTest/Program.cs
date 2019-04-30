@@ -47,7 +47,7 @@ namespace FileTunnelSpeedTest
 
             FileServer fileServer = new FileServer("127.0.0.1", 1044, TestServerRootDirectory);
             Thread.Sleep(1000);
-
+            
             var fileDownloader1 = new FileDownloader("127.0.0.1", 1044, TestReceiveDirectory);
             var fileDownloader2 = new FileDownloader("127.0.0.1", 1044, TestReceiveDirectory);
             var fileDownloader3 = new FileDownloader("127.0.0.1", 1044, TestReceiveDirectory);
