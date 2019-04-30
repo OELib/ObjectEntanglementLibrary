@@ -71,7 +71,7 @@ namespace OELib.FileTunnel
             ProcessAllFileTransferRequests();
         }
 
-        private void ProcessAllFileTransferRequests()
+        public void ProcessAllFileTransferRequests()
         {
             while (_fileTransferRequestStack.Count > 0)
                 _fileTransferRequestStack.PopAndProcess();
@@ -111,7 +111,9 @@ namespace OELib.FileTunnel
         private void OnServerMessageCarrierReceived(object sender, MessageCarrier mc)
         {
             if (mc.Type == MessageType.FileRequest)
+            {
                 _fileTransferRequestStack.Push(sender as FileTunnelServerConnection, AddPaths(RootDirectory, mc.Payload as string));
+            }
 
             if (mc.Type == MessageType.ListFilesRequest)
             {
@@ -218,9 +220,7 @@ namespace OELib.FileTunnel
                     return p1 + p2;
 
                 else
-                {
                     return p1 + "\\" + p2;
-                }
             }
         }
     }

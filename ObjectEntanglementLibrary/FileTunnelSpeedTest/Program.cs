@@ -7,6 +7,7 @@ using System.Threading;
 using OELib.ObjectTunnel;
 using OELib.FileTunnel;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace FileTunnelSpeedTest
 {
@@ -18,10 +19,30 @@ namespace FileTunnelSpeedTest
         static string TestServerRootDirectory = @"C:\Users\ari\TestFileServer\";
 
         static string TestServerSubDirectory = @"testfolder1\";
-        static string TestFile = "test.txt";
+
+        static string TestFile1 = "test1.txt";
+        static string TestFile2 = "test2.txt";
+        static string TestFile3 = "test3.txt";
+        static string TestFile4 = "test4.txt";
+        static string TestFile5 = "test5.txt";
+
+        static string TestBigFile1 = "testbig1.zip";
+        static string TestBigFile2 = "testbig2.zip";
+        static string TestBigFile3 = "testbig3.zip";
+        static string TestBigFile4 = "testbig4.zip";
+        static string TestBigFile5 = "testbig5.zip";
 
         static void Main(string[] args)
         {
+            Console.WriteLine("This test needs 5 files " + TestFile1 + " - " + TestFile5 + " located in:");
+            Console.WriteLine(TestServerRootDirectory + TestServerSubDirectory);
+            Console.WriteLine("The download directory will be:");
+            Console.WriteLine(TestReceiveDirectory);
+            Console.WriteLine("To test ListFiles and ListFolders, also place some random files/folders in:");
+            Console.WriteLine(TestServerRootDirectory + TestServerSubDirectory);
+            Console.WriteLine("Press enter to continue...");
+            Console.ReadLine();
+
             FileServer fileServer = new FileServer("127.0.0.1", 1044, TestServerRootDirectory);
             fileServer.FileTransferAutoProcess = true;
             Thread.Sleep(1000);
@@ -32,9 +53,11 @@ namespace FileTunnelSpeedTest
             var fileDownloader4 = new FileDownloader("127.0.0.1", 1044, TestReceiveDirectory);
             var fileDownloader5 = new FileDownloader("127.0.0.1", 1044, TestReceiveDirectory);
 
-            Console.WriteLine("\n\nTestFileTransfer - " + TestServerRootDirectory + TestServerSubDirectory + TestFile);
-            TestFileTransfer(fileDownloader1, TestServerSubDirectory, TestFile);
-            Console.WriteLine("Now check if " + TestFile + " is in " + TestReceiveDirectory);
+            // Uncomment the test you want to run
+
+            //Console.WriteLine("\n\nTestFileTransfer - " + TestServerRootDirectory + TestServerSubDirectory + TestFile1);
+            //TestFileTransfer(fileDownloader1, TestServerSubDirectory, TestFile1);
+            //Console.WriteLine("Now check if " + TestFile1 + " is in " + TestReceiveDirectory);
 
             //Console.WriteLine("\n\nTestListFiles - " + TestServerRootDirectory + TestServerSubDirectory);
             //TestListFiles(fileDownloader1, TestServerSubDirectory);
@@ -42,17 +65,17 @@ namespace FileTunnelSpeedTest
             //Console.WriteLine("\n\nTestListDirectories - " + TestServerRootDirectory + TestServerSubDirectory);
             //TestListDirectories(fileDownloader1, TestServerSubDirectory);
 
-            //Console.WriteLine("\n\nTestListProperties - " + TestServerRootDirectory + TestServerSubDirectory + TestFile);
+            //Console.WriteLine("\n\nTestListProperties - " + TestServerRootDirectory + TestServerSubDirectory + TestFile1);
             //Console.WriteLine("\nfileDownloader1");
-            //TestListFileProperties(fileDownloader1, TestServerSubDirectory, TestFile);
+            //TestListFileProperties(fileDownloader1, TestServerSubDirectory, TestFile1);
             //Console.WriteLine("\nfileDownloader2");
-            //TestListFileProperties(fileDownloader2, TestServerSubDirectory, TestFile);
+            //TestListFileProperties(fileDownloader2, TestServerSubDirectory, TestFile1);
             //Console.WriteLine("\nfileDownloader3");
-            //TestListFileProperties(fileDownloader3, TestServerSubDirectory, TestFile);
+            //TestListFileProperties(fileDownloader3, TestServerSubDirectory, TestFile1);
             //Console.WriteLine("\nfileDownloader4");
-            //TestListFileProperties(fileDownloader4, TestServerSubDirectory, TestFile);
+            //TestListFileProperties(fileDownloader4, TestServerSubDirectory, TestFile1);
             //Console.WriteLine("\nfileDownloader5");
-            //TestListFileProperties(fileDownloader5, TestServerSubDirectory, TestFile);
+            //TestListFileProperties(fileDownloader5, TestServerSubDirectory, TestFile1);
 
             //// Run this, and in the TestServerRootDirectory try create a file, modify a file and rename a file.
             //// This should give 5 messages for each operation, total 15 messages in the console output.
@@ -62,6 +85,45 @@ namespace FileTunnelSpeedTest
             //TestWatchDirectory(fileDownloader3);
             //TestWatchDirectory(fileDownloader4);
             //TestWatchDirectory(fileDownloader5);
+
+            //// Test 5 fast downloads by the same client
+            //Console.WriteLine("\n\nTestFileTransfer 5x - " + TestServerRootDirectory + TestServerSubDirectory + TestFile + " (1-5)");
+            //TestFileTransfer(fileDownloader1, TestServerSubDirectory, "test1.txt");
+            //TestFileTransfer(fileDownloader1, TestServerSubDirectory, "test2.txt");
+            //TestFileTransfer(fileDownloader1, TestServerSubDirectory, "test3.txt");
+            //TestFileTransfer(fileDownloader1, TestServerSubDirectory, "test4.txt");
+            //TestFileTransfer(fileDownloader1, TestServerSubDirectory, "test5.txt");
+            //Console.WriteLine("Now check if test1.txt - test5.txt are in " + TestReceiveDirectory);
+
+            //// Test 5 fast download requests by different clients
+            //Console.WriteLine("\n\nTestFileTransfer 5x - " + TestServerRootDirectory + TestServerSubDirectory + ", " + TestFile1 + " - " + TestFile5);
+            //fileServer.FileTransferAutoProcess = false;
+            //TestFileTransferRequest(fileDownloader1, TestServerSubDirectory, TestFile1);
+            //TestFileTransferRequest(fileDownloader2, TestServerSubDirectory, TestFile2);
+            //TestFileTransferRequest(fileDownloader3, TestServerSubDirectory, TestFile3);
+            //TestFileTransferRequest(fileDownloader4, TestServerSubDirectory, TestFile4);
+            //TestFileTransferRequest(fileDownloader5, TestServerSubDirectory, TestFile5);
+            //Thread.Sleep(100);  // Give the server time to stack the requests
+            //fileServer.ProcessAllFileTransferRequests();
+            //fileServer.FileTransferAutoProcess = true;
+            //Console.WriteLine("Now check if " + TestFile1 + " - " + TestFile5 + " are in " + TestReceiveDirectory);
+
+            //Console.WriteLine("\n\nTestFileTransfer, non-existing file - " + TestServerRootDirectory + TestServerSubDirectory + "thisfiledoesnotexist.txt");
+            //TestFileTransfer(fileDownloader1, TestServerSubDirectory, "thisfiledoesnotexist.txt");
+            //Console.WriteLine("Now check if " + "thisfiledoesnotexist.txt" + " is in " + TestReceiveDirectory);
+
+            //Console.WriteLine("\n\nTestBigFileTransfer, big file simultaneously to 5 clients - " + TestServerRootDirectory + TestServerSubDirectory + TestBigFile1);
+            //var t1 = Task.Run(() => TestFileTransfer(fileDownloader1, TestServerSubDirectory, TestBigFile1));
+            //var t2 = Task.Run(() => TestFileTransfer(fileDownloader2, TestServerSubDirectory, TestBigFile2));
+            //var t3 = Task.Run(() => TestFileTransfer(fileDownloader3, TestServerSubDirectory, TestBigFile3));
+            //var t4 = Task.Run(() => TestFileTransfer(fileDownloader4, TestServerSubDirectory, TestBigFile4));
+            //var t5 = Task.Run(() => TestFileTransfer(fileDownloader5, TestServerSubDirectory, TestBigFile5));
+            //t1.Wait();
+            //t2.Wait();
+            //t3.Wait();
+            //t4.Wait();
+            //t5.Wait();
+            //Console.WriteLine("Now check if " + TestBigFile1 + " - " + TestBigFile5 + " are in " + TestReceiveDirectory);
 
             Console.ReadLine();
         }
