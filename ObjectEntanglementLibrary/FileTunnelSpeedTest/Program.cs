@@ -36,6 +36,8 @@ namespace FileTunnelSpeedTest
         {
             Console.WriteLine("This test needs 5 files " + TestFile1 + " - " + TestFile5 + " located in:");
             Console.WriteLine(TestServerRootDirectory + TestServerSubDirectory);
+            Console.WriteLine("This test needs 5 big files " + TestBigFile1 + " - " + TestBigFile5 + " located in:");
+            Console.WriteLine(TestServerRootDirectory + TestServerSubDirectory);
             Console.WriteLine("The download directory will be:");
             Console.WriteLine(TestReceiveDirectory);
             Console.WriteLine("To test ListFiles and ListFolders, also place some random files/folders in:");
