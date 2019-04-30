@@ -99,12 +99,15 @@ namespace OELib.FileTunnel
         {
             var clientSidePathAndName = e.FullPath.Replace(RootDirectory, "");
 
-            if (e.ChangeType == WatcherChangeTypes.Changed || e.ChangeType == WatcherChangeTypes.Created || e.ChangeType == WatcherChangeTypes.Renamed)
+            if (clientSidePathAndName.Contains(".") == true)    // This is to ignore changes in subdirectories
             {
-                var mc = new MessageCarrier(MessageType.WatcherFileModified) { Payload = clientSidePathAndName };
+                if (e.ChangeType == WatcherChangeTypes.Changed || e.ChangeType == WatcherChangeTypes.Created || e.ChangeType == WatcherChangeTypes.Renamed)
+                {
+                    var mc = new MessageCarrier(MessageType.WatcherFileModified) { Payload = clientSidePathAndName };
 
-                if (_directoryWatcherPending.Any(p => (string)p.Payload == clientSidePathAndName) == false)
-                    _directoryWatcherPending.Push(mc);
+                    if (_directoryWatcherPending.Any(p => (string)p.Payload == clientSidePathAndName) == false)
+                        _directoryWatcherPending.Push(mc);
+                }
             }
         }
 

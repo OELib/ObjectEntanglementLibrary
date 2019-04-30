@@ -70,16 +70,8 @@ namespace FileTunnelSpeedTest
             //Console.WriteLine("\n\nTestListProperties - " + TestServerRootDirectory + TestServerSubDirectory + TestFile1);
             //Console.WriteLine("\nfileDownloader1");
             //TestListFileProperties(fileDownloader1, TestServerSubDirectory, TestFile1);
-            //Console.WriteLine("\nfileDownloader2");
-            //TestListFileProperties(fileDownloader2, TestServerSubDirectory, TestFile1);
-            //Console.WriteLine("\nfileDownloader3");
-            //TestListFileProperties(fileDownloader3, TestServerSubDirectory, TestFile1);
-            //Console.WriteLine("\nfileDownloader4");
-            //TestListFileProperties(fileDownloader4, TestServerSubDirectory, TestFile1);
-            //Console.WriteLine("\nfileDownloader5");
-            //TestListFileProperties(fileDownloader5, TestServerSubDirectory, TestFile1);
 
-            //// Run this, and in the TestServerRootDirectory try create a file, modify a file and rename a file.
+            ////Run this, and in the TestServerRootDirectory try create a file, modify a file and rename a file.
             //// This should give 5 messages for each operation, total 15 messages in the console output.
             //Console.WriteLine("\n\nTestWatchDirectory - " + TestServerRootDirectory);
             //TestWatchDirectory(fileDownloader1);
