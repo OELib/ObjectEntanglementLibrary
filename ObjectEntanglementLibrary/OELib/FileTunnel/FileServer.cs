@@ -80,10 +80,11 @@ namespace OELib.FileTunnel
             while (_directoryWatcherPending.Count > 0)
             {
                 var mc = _directoryWatcherPending.Pop();
-
-                foreach (var ftsc in _directoryWatcherSubscribers)
+                
+                for (int i = _directoryWatcherSubscribers.Count - 1; i >= 0; i--)
                 {
-                    ftsc.SendMessageCarrier(mc);
+                    if (_directoryWatcherSubscribers[i].SendMessageCarrier(mc) == false)
+                        _directoryWatcherSubscribers.RemoveAt(i);
                 }
             }
         }
