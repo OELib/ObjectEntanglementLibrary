@@ -25,9 +25,10 @@ namespace OELib.FileTunnel
         // Responses are only added here if they are not already in this list
         private Stack<MessageCarrier> _directoryWatcherPending = new Stack<MessageCarrier>();
 
-        public FileServer(string ip, int port, string rootDirectory)
+
+        public FileServer(IPEndPoint ipEndPoint, string rootDirectory)
         {
-            FileTunnelServer = new FileTunnelServer(new IPEndPoint(IPAddress.Parse("127.0.0.1"), port));
+            FileTunnelServer = new FileTunnelServer(ipEndPoint);
             FileTunnelServer.Start();
 
             _fileTransferRequestStack = new FileRequestStack();
@@ -51,6 +52,11 @@ namespace OELib.FileTunnel
             FileTunnelServer.MessageCarrierReceived += OnServerMessageCarrierReceived;
             _fileTransferRequestStack.SendFile += OnServerSendFile;
             _fileTransferRequestStack.FileNotFound += OnServerFileNotFound;
+        }
+
+        public FileServer(string ip, int port, string rootDirectory)
+        : this(new IPEndPoint(IPAddress.Parse(ip), port), rootDirectory)
+        {
         }
 
         private void OnFileTransferTimerEvent(object source, ElapsedEventArgs e)
