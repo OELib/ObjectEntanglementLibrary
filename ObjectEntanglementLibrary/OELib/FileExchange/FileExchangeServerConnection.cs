@@ -2,13 +2,13 @@
 using System.Runtime.Serialization;
 using OELib.LibraryBase;
 
-namespace OELib.FileConnection
+namespace OELib.FileExchange
 {
-    public class FileConnectionServerConnection : ServerSideConnection, IFileConnection
+    public class FileExchangeServerConnection : ServerSideConnection, IFileConnection
     {
-        public FileConnectionManager FileManager { get; }
+        public FileExchangeManager FileManager { get; }
 
-        public FileConnectionServerConnection(FileConnectionManager manager, TcpClient client, IFormatter customFormatter = null, ILogger logger = null,
+        public FileExchangeServerConnection(FileExchangeManager manager, TcpClient client, IFormatter customFormatter = null, ILogger logger = null,
             bool useCompression = false)
             : base(client, customFormatter, logger, useCompression)
         {

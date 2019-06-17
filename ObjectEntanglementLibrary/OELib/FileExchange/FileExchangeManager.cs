@@ -4,13 +4,13 @@ using System.IO;
 using System.Linq;
 using OELib.LibraryBase;
 
-namespace OELib.FileConnection
+namespace OELib.FileExchange
 {
-    public class FileConnectionManager
+    public class FileExchangeManager
     {
         private readonly string _rootDir;
 
-        public FileConnectionManager(string rootDir, Connection connection = null)
+        public FileExchangeManager(string rootDir, Connection connection = null)
         {
             _rootDir = rootDir;
             if (connection != null)
@@ -45,7 +45,7 @@ namespace OELib.FileConnection
         private void handleResponse(FileInfoResponse resp, Connection client)
         {
             if (resp is FileListingResponse flr)
-                FileListingDone?.Invoke(this, flr.FileList);
+                FileListingDone?.Invoke(client, flr.FileList);
         }
 
 

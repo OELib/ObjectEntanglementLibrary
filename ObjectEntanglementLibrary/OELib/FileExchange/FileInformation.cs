@@ -2,11 +2,11 @@
 using System.IO;
 using System.Security.Cryptography;
 
-namespace OELib.FileConnection
+namespace OELib.FileExchange
 {
     public class FileInformation
     {
-        private string _rootDirectory = null;
+        private readonly string _rootDirectory;
 
         public Guid ID { get; }
         public string FileName { get; set; }

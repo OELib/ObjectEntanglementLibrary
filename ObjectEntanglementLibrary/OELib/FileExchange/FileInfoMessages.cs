@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using OELib.LibraryBase.Messages;
 
-namespace OELib.FileConnection
+namespace OELib.FileExchange
 {
     public abstract class FileInfoMessage : Message
     {
@@ -33,6 +33,7 @@ namespace OELib.FileConnection
         public FileListingResponse(FileListingRequest request, List<FileInformation> fileList)
         : base(request)
         {
+            FileList = fileList;
         }
     }
 
