@@ -16,7 +16,7 @@ namespace OELib.UniversalConnection
             : base(formatter, logger, useCompression)
         {
             Reactor = new Reactor(this, reactingObject);
-            MessageRecieved += ObjectTunnelClientConnection_MessageReceived;
+            MessageReceived += ObjectTunnelClientConnection_MessageReceived;
             if (Start(client)) Reactor.Start();
             else throw new Exception("Server connection failed.");
         }

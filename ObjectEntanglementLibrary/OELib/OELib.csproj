@@ -43,10 +43,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FileConnection\FileConnectionServer.cs" />
     <Compile Include="FileConnection\FileInformation.cs" />
     <Compile Include="FileConnection\FileInfoMessages.cs" />
+    <Compile Include="FileConnection\FileConnectionClientConnection.cs" />
+    <Compile Include="FileConnection\FileConnectionServerConnection.cs" />
     <Compile Include="FileConnection\IFileConnection.cs" />
-    <Compile Include="FileConnection\ServerFileManager.cs" />
+    <Compile Include="FileConnection\FileConnectionManager.cs" />
     <Compile Include="FileTunnel\FileProperties.cs" />
     <Compile Include="FileTunnel\FileDownloader.cs" />
     <Compile Include="FileTunnel\FileServer.cs" />

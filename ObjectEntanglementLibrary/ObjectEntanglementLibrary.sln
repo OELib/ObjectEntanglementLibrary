@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileTunnelSpeedTest", "File
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UCExample", "UCExample\UCExample.csproj", "{025FE1D4-B06A-48B8-8289-942F898D3C50}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileConnExample", "Examples\FileConnExample\FileConnExample.csproj", "{BFE70343-A58F-43C0-BDEB-7E0F89AAA4C2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -91,6 +93,10 @@ Global
 		{025FE1D4-B06A-48B8-8289-942F898D3C50}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{025FE1D4-B06A-48B8-8289-942F898D3C50}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{025FE1D4-B06A-48B8-8289-942F898D3C50}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BFE70343-A58F-43C0-BDEB-7E0F89AAA4C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BFE70343-A58F-43C0-BDEB-7E0F89AAA4C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BFE70343-A58F-43C0-BDEB-7E0F89AAA4C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BFE70343-A58F-43C0-BDEB-7E0F89AAA4C2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -106,6 +112,7 @@ Global
 		{0BC7C3A0-65D8-4641-98DF-B66CA395D21A} = {A3344C66-3CE7-4732-BA9E-890C8306C06B}
 		{AA3DBD4B-8C93-458C-AB20-D052EAEA237B} = {A3344C66-3CE7-4732-BA9E-890C8306C06B}
 		{025FE1D4-B06A-48B8-8289-942F898D3C50} = {A3344C66-3CE7-4732-BA9E-890C8306C06B}
+		{BFE70343-A58F-43C0-BDEB-7E0F89AAA4C2} = {A3344C66-3CE7-4732-BA9E-890C8306C06B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FAA5C6A3-47E8-4820-BF54-B979C7F18DCF}

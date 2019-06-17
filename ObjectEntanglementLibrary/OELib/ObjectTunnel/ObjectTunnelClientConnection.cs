@@ -12,7 +12,7 @@ namespace OELib.ObjectTunnel
         public ObjectTunnelClientConnection(IFormatter customFormatter = null, ILogger logger = null, bool useCompression = false)
             : base(customFormatter, logger, useCompression)
         {
-            MessageRecieved += ObjectTunnelClientConnection_MessageReceived;
+            MessageReceived += ObjectTunnelClientConnection_MessageReceived;
             Name = "Object tunnel client connection.";
             PingInterval = 10000;
         }

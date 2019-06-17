@@ -18,7 +18,7 @@ namespace OELib.ObjectTunnel
         
         protected void hookEvents()
         {
-            MessageRecieved += ObjectTunnelClientConnection_MessageReceived;
+            MessageReceived += ObjectTunnelClientConnection_MessageReceived;
         }
 
         private void ObjectTunnelClientConnection_MessageReceived(object sender, LibraryBase.Messages.Message e)

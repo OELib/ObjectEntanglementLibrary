@@ -15,7 +15,7 @@ namespace OELib.UniversalConnection
             : base(customFormatter, logger, useCompression)
         {
             Reactor = new Reactor(this, reactingObject);
-            MessageRecieved += ObjectTunnelClientConnection_MessageReceived;
+            MessageReceived += ObjectTunnelClientConnection_MessageReceived;
         }
 
         public override bool Start(string IpAddress, int port)

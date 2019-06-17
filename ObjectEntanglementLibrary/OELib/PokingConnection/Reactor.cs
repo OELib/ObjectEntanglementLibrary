@@ -48,7 +48,7 @@ namespace OELib.PokingConnection
         {
             _connection = connection;
             _reactingObject = reactingObject;
-            _connection.MessageRecieved += _connection_MessageRecieved;
+            _connection.MessageReceived += _connection_MessageRecieved;
         }
 
         public void Start()

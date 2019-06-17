@@ -18,7 +18,7 @@ namespace OELib.FileTunnel
         
         protected void hookEvents()
         {
-            MessageRecieved += FileTunnelClientConnection_MessageRecieved;
+            MessageReceived += FileTunnelClientConnection_MessageRecieved;
         }
 
         private void FileTunnelClientConnection_MessageRecieved(object sender, LibraryBase.Messages.Message e)
