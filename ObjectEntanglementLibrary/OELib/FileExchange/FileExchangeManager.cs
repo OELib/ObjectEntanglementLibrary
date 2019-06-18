@@ -19,6 +19,8 @@ namespace OELib.FileExchange
             _connection = connection;
         }
 
+
+
         internal void hookEvents(Connection connection)
         {
             connection.MessageReceived += (conn, e) =>
@@ -30,9 +32,40 @@ namespace OELib.FileExchange
                         case FileExchangeRequest req:
                             handleRequest(req, connection);
                             break;
+                        case FileExchangeResponse resp:
+                            handleResponse(resp);
+                            break;
                     }
                 }
             };
+        }
+
+        public event EventHandler<FileInformation> RemoteFileCreated;
+        public event EventHandler<FileInformation> RemoteFileDeleted;
+        public event EventHandler<FileInformation> RemoteFileModified;
+
+        private readonly Actor _eventDriver = new Actor();
+
+        private void handleResponse(FileExchangeResponse resp)
+        {
+            switch (resp)
+            {
+                case FileChangeNotification fcn:
+                    switch (fcn.ChangeType)
+                    {
+                        case FileChangeNotification.FileChangeType.Created:
+                            _eventDriver.Post(()=>RemoteFileCreated?.Invoke(this, fcn.ModifiedFile));
+                            break;
+                        case FileChangeNotification.FileChangeType.Deleted:
+                            _eventDriver.Post(() => RemoteFileDeleted?.Invoke(this, fcn.ModifiedFile));
+                            break;
+                        case FileChangeNotification.FileChangeType.Modified:
+                            _eventDriver.Post(() => RemoteFileModified?.Invoke(this, fcn.ModifiedFile));
+                            break;
+                    }
+                    break;
+
+            }
         }
 
         private void handleRequest(FileExchangeRequest request, Connection client)
@@ -46,7 +79,44 @@ namespace OELib.FileExchange
                 case FileGetRequest fgr:
                     handleFileGetRequest(fgr, client);
                     break;
+                case FileTrackChangesRequest tcr:
+                    handleTrackChangesRequest(tcr);
+                    break;
             }
+        }
+
+        private FileTrackChangesRequest _trackChangesRequest = null; 
+
+        private void handleTrackChangesRequest(FileTrackChangesRequest tcr)
+        {
+            if (_trackChangesRequest == null) // first time
+            {
+                _trackChangesRequest = tcr;
+                var fsv = new FileSystemWatcher(_rootDir);
+                fsv.NotifyFilter = NotifyFilters.FileName | NotifyFilters.Size;
+                fsv.EnableRaisingEvents = true;
+                fsv.Created += (s, fArg) =>
+                {
+                    _connection.SendMessage(new FileChangeNotification(_trackChangesRequest,
+                        new FileInformation(_rootDir, fArg.Name), FileChangeNotification.FileChangeType.Created));
+                };
+
+                fsv.Deleted += (s, fArg) =>
+                {
+                    _connection.SendMessage(new FileChangeNotification(_trackChangesRequest,
+                        new FileInformation(_rootDir, fArg.Name), FileChangeNotification.FileChangeType.Deleted));
+                };
+
+                fsv.Changed += (s, fArg) => // TODO: fix this, it does not work well. https://stackoverflow.com/questions/22447022/best-way-to-track-files-being-moved-possibly-between-disks-vb-net-or-c
+                {
+                    _connection.SendMessage(new FileChangeNotification(_trackChangesRequest,
+                        new FileInformation(_rootDir, fArg.Name), FileChangeNotification.FileChangeType.Modified));
+                };
+
+
+            }
+
+            _trackChangesRequest = tcr;
         }
 
         private void handleFileGetRequest(FileGetRequest fgr, Connection client)
@@ -90,6 +160,11 @@ namespace OELib.FileExchange
             var targetFileName = Path.Combine(_rootDir, fileData.FileToGet.Directory, fileData.FileToGet.FileName);
             File.WriteAllBytes(targetFileName, fileData.Data);
             return new FileInfo(targetFileName);
+        }
+
+        public void MonitorRemoteDirectory()
+        {
+            _connection.SendMessage(new FileTrackChangesRequest());
         }
 
 

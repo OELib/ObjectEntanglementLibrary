@@ -31,7 +31,7 @@ namespace OELib.FileExchange
     [Serializable]
     public class FileListingResponse : FileExchangeResponse
     {
-        public List<FileInformation> FileList { get; set; }
+        public List<FileInformation> FileList { get; }
         public FileListingResponse(FileListingRequest request, List<FileInformation> fileList)
         : base(request)
         {
@@ -42,7 +42,7 @@ namespace OELib.FileExchange
     [Serializable]
     public class FileGetRequest : FileExchangeRequest
     {
-        public FileInformation FileToGet { get; set; }
+        public FileInformation FileToGet { get; }
         public FileGetRequest(FileInformation fileToRetrieve)
         {
             FileToGet = fileToRetrieve;
@@ -52,15 +52,37 @@ namespace OELib.FileExchange
     [Serializable]
     public class FileGetResponse : FileExchangeResponse
     {
-        public FileInformation FileToGet { get; set; }
+        public FileInformation FileToGet { get; }
         public byte[] Data { get; set; }
         public Exception Exception { get; set; }
+
         public FileGetResponse(FileGetRequest request, byte[] data)
         : base(request)
         {
             FileToGet = request.FileToGet;
             Data = data;
         }
+    }
+
+    [Serializable]
+    public class FileTrackChangesRequest : FileExchangeRequest
+    {
+    }
+
+    [Serializable]
+    public class FileChangeNotification : FileExchangeResponse
+    {
+        public enum FileChangeType { Created, Deleted, Modified}
+        public FileChangeNotification(FileTrackChangesRequest request, FileInformation file, FileChangeType changeType)
+            : base(request)
+        {
+            ModifiedFile = file;
+            ChangeType = changeType;
+        }
+
+        public FileChangeType ChangeType { get; set; }
+
+        public FileInformation ModifiedFile { get; set; }
     }
 
 }

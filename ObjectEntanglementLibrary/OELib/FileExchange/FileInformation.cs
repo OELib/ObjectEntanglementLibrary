@@ -15,6 +15,7 @@ namespace OELib.FileExchange
         public DateTime Created { get;  }
         public DateTime LastModified { get;  }
         public byte[] Hash { get; private set; }
+        public bool Exists { get; private set; }
 
         /// <summary>
         /// File descriptor
@@ -30,6 +31,8 @@ namespace OELib.FileExchange
             if (fileInfo.DirectoryName == null) return;
             Directory = Path.GetFullPath(fileInfo.DirectoryName + "\\").Substring(rootDir.Length);
             FileName = fileInfo.Name;
+            Exists = fileInfo.Exists;
+            if (!Exists) return;
             Created = fileInfo.CreationTime;
             LastModified = fileInfo.LastWriteTime;
             Size = (int) fileInfo.Length;

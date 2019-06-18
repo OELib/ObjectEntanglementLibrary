@@ -38,6 +38,15 @@ namespace FileConnExample
                 var fileInfo = client.FileManager.DownloadFile(f);
                 if (fileInfo.Exists) Console.WriteLine($"Downloaded file {fileInfo.Name}, size {fileInfo.Length}.");
             }
+
+            client.FileManager.MonitorRemoteDirectory();
+            client.FileManager.RemoteFileCreated += (_, fi) => Console.WriteLine($"{fi.FileName} was created on server.");
+            client.FileManager.RemoteFileDeleted += (_, fi) => Console.WriteLine($"{fi.FileName} was deleted on server.");
+            client.FileManager.RemoteFileModified += (_, fi) => Console.WriteLine($"{fi.FileName} was modified on server.");
+
+            Console.ReadLine();
+
+
             client.Stop();
         }
     }
