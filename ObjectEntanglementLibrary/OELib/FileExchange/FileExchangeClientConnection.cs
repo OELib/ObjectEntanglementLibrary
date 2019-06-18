@@ -5,6 +5,7 @@ namespace OELib.FileExchange
 {
     public class FileExchangeClientConnection : ReconnectingClientSideConnection, IFileConnection
     {
+        public FileExchangeManager FileManager { get; }
 
         public FileExchangeClientConnection(string rootDir, IFormatter customFormatter = null, ILogger logger = null,
             bool useCompression = false)
@@ -12,8 +13,5 @@ namespace OELib.FileExchange
         {
             FileManager = new FileExchangeManager(rootDir, this);
         }
-
-        public FileExchangeManager FileManager { get; }
-
     }
 }

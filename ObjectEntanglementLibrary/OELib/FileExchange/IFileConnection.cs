@@ -2,5 +2,6 @@
 {
     public interface IFileConnection
     {
+        FileExchangeManager FileManager { get; }
     }
 }

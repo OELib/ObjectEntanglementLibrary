@@ -45,7 +45,7 @@
   <ItemGroup>
     <Compile Include="FileExchange\FileExchangeServer.cs" />
     <Compile Include="FileExchange\FileInformation.cs" />
-    <Compile Include="FileExchange\FileInfoMessages.cs" />
+    <Compile Include="FileExchange\FileExchangeMessages.cs" />
     <Compile Include="FileExchange\FileExchangeClientConnection.cs" />
     <Compile Include="FileExchange\FileExchangeServerConnection.cs" />
     <Compile Include="FileExchange\IFileConnection.cs" />
