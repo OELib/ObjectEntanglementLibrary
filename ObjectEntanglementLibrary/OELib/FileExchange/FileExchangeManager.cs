@@ -54,7 +54,7 @@ namespace OELib.FileExchange
                     switch (fcn.ChangeType)
                     {
                         case FileChangeNotification.FileChangeType.Created:
-                            _eventDriver.Post(()=>RemoteFileCreated?.Invoke(this, fcn.ModifiedFile));
+                            _eventDriver.Post(() => RemoteFileCreated?.Invoke(this, fcn.ModifiedFile));
                             break;
                         case FileChangeNotification.FileChangeType.Deleted:
                             _eventDriver.Post(() => RemoteFileDeleted?.Invoke(this, fcn.ModifiedFile));
@@ -85,7 +85,7 @@ namespace OELib.FileExchange
             }
         }
 
-        private FileTrackChangesRequest _trackChangesRequest = null; 
+        private FileTrackChangesRequest _trackChangesRequest = null;
 
         private void handleTrackChangesRequest(FileTrackChangesRequest tcr)
         {
@@ -143,7 +143,7 @@ namespace OELib.FileExchange
         public List<FileInformation> ListLocalFiles()
         {
             //todo: make sure it traverses sub directories
-            var fileNames = Directory.GetFiles(_rootDir).Select(fn=>Path.GetFullPath(fn).Substring(_rootDir.Length)).ToList();
+            var fileNames = Directory.GetFiles(_rootDir).Select(fn => Path.GetFullPath(fn).Substring(_rootDir.Length)).ToList();
             return fileNames.Select(fn => new FileInformation(_rootDir, fn)).ToList();
         }
 
@@ -162,11 +162,16 @@ namespace OELib.FileExchange
             return new FileInfo(targetFileName);
         }
 
-        public void MonitorRemoteDirectory()
+        public void MonitorRemoteDirectoryChange()
         {
             _connection.SendMessage(new FileTrackChangesRequest());
         }
 
-
+        public void ManuallyTriggerFileChange(FileInformation changedFile,
+            FileChangeNotification.FileChangeType changeType)
+        {
+            var _ = new FileTrackChangesRequest(); // manually triggered change notification does not have a calling message.
+            _connection.SendMessage(new FileChangeNotification(_, changedFile, changeType));
+        }
     }
 }

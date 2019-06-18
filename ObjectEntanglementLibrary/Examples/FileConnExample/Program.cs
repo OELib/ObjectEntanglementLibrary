@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -35,11 +36,13 @@ namespace FileConnExample
             fileListing.FileList.ForEach(f => Console.WriteLine($"File size:  {f.Size}, name {f.FileName}, dir {f.Directory}"));
             foreach (var f in fileListing.FileList)
             {
+                var sw = Stopwatch.StartNew();
                 var fileInfo = client.FileManager.DownloadFile(f);
-                if (fileInfo.Exists) Console.WriteLine($"Downloaded file {fileInfo.Name}, size {fileInfo.Length}.");
+                sw.Stop();
+                if (fileInfo.Exists) Console.WriteLine($"Downloaded file {fileInfo.Name}, size {fileInfo.Length}. It took {sw.ElapsedMilliseconds} ms which is {fileInfo.Length / (sw.ElapsedMilliseconds / 1000.0)} byte / sec.");
             }
 
-            client.FileManager.MonitorRemoteDirectory();
+            client.FileManager.MonitorRemoteDirectoryChange();
             client.FileManager.RemoteFileCreated += (_, fi) => Console.WriteLine($"{fi.FileName} was created on server.");
             client.FileManager.RemoteFileDeleted += (_, fi) => Console.WriteLine($"{fi.FileName} was deleted on server.");
             client.FileManager.RemoteFileModified += (_, fi) => Console.WriteLine($"{fi.FileName} was modified on server.");
