@@ -14,20 +14,19 @@ namespace OELib.FileExchange
         {
             _rootDir = rootDir;
             if (connection != null)
-                HookEvents(connection);
-
+                hookEvents(connection);
         }
 
-        public void HookEvents(Connection connection)
+        internal void hookEvents(Connection connection)
         {
             connection.MessageReceived += (conn, e) =>
             {
-                if (e is FileInfoMessage msg) HandleFileInfoMessage(msg, connection);
+                if (e is FileInfoMessage msg) handleFileInfoMessage(msg, connection);
             };
         }
 
         //makes decision id the message is request or response
-        public void HandleFileInfoMessage(FileInfoMessage msg, Connection client)
+        private void handleFileInfoMessage(FileInfoMessage msg, Connection client)
         {
             switch (msg)
             {
@@ -54,20 +53,23 @@ namespace OELib.FileExchange
             switch (request)
             {
                 case FileListingRequest fir:
-                    List<FileInformation> fileListing = createFilesList();
+                    List<FileInformation> fileListing = ListLocalFiles();
                     client.SendMessage(new FileListingResponse(fir, fileListing));
                     break;
 
                 case FileGetRequest fgr:
                     break;
             }
-
         }
 
-        private List<FileInformation> createFilesList()
+        public List<FileInformation> ListLocalFiles()
         {
             var fileNames = Directory.GetFiles(_rootDir);
             return fileNames.Select(fn => new FileInformation(_rootDir, fn)).ToList();
         }
+
+
+
+
     }
 }

@@ -14,13 +14,7 @@ namespace OELib.FileExchange
         {
             FileManager = manager;
             Start(client);
-            MessageReceived += FileTunnelServerConnection_MessageReceived;
-        }
-
-        private void FileTunnelServerConnection_MessageReceived(object sender, LibraryBase.Messages.Message e)
-        {
-            if (!(e is FileInfoMessage msg)) return;
-            FileManager.HandleFileInfoMessage(msg, this);
+            FileManager.hookEvents(this);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Threading;
 using OELib.FileExchange;
 
 namespace FileConnExample
@@ -18,7 +19,12 @@ namespace FileConnExample
             // start server
             var server = new FileExchangeServer(serverFolder, new System.Net.IPEndPoint(System.Net.IPAddress.Any, 2048));
             server.Start();
-            //var client = new 
+            var client = new FileExchangeClientConnection(clientFolder);
+            AutoResetEvent go = new AutoResetEvent(false);
+            client.Started += (_, __) => go.Set();
+            client.Start("127.0.0.1", 2048);
+            go.WaitOne(300);
+            client.FileManager.
 
 
         }

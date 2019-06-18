@@ -10,7 +10,7 @@ namespace OELib.FileExchange
             bool useCompression = false)
             : base(customFormatter, logger, useCompression)
         {
-            FileManager = new FileExchangeManager(rootDir);
+            FileManager = new FileExchangeManager(rootDir, this);
         }
 
         public FileExchangeManager FileManager { get; }
