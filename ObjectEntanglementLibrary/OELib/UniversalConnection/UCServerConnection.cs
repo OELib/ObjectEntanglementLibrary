@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net.Sockets;
 using System.Runtime.Serialization;
+using OELib.FileExchange;
 using OELib.LibraryBase;
 using OELib.ObjectTunnel;
 using OELib.PokingConnection;
@@ -9,15 +10,21 @@ namespace OELib.UniversalConnection
 {
     public class UCServerConnection : ServerSideConnection, IPokingConnection, IObjectTunnelConnection
     {
+        public FileExchangeManager FileManager { get; }
+        public Reactor Reactor { get; }
 
-        public Reactor Reactor { get; protected set; }
-
-        public UCServerConnection(TcpClient client, object reactingObject, IFormatter formatter = null, ILogger logger = null, bool useCompression = false)
+        public UCServerConnection(TcpClient client, object reactingObject, string rootPath, IFormatter formatter = null, ILogger logger = null, bool useCompression = false)
             : base(formatter, logger, useCompression)
         {
-            Reactor = new Reactor(this, reactingObject);
+            if (reactingObject != null)
+                Reactor = new Reactor(this, reactingObject);
             MessageReceived += ObjectTunnelClientConnection_MessageReceived;
-            if (Start(client)) Reactor.Start();
+            if (Start(client))
+            {
+                Reactor?.Start();
+                if (rootPath != null)
+                    FileManager = new FileExchangeManager(rootPath, this);
+            }
             else throw new Exception("Server connection failed.");
         }
 

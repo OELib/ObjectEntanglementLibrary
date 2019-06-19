@@ -13,17 +13,19 @@ namespace OELib.UniversalConnection
     public class UcServer : CommunicationServer<UCServerConnection>, IObjectTunnelConnection
     {
 
-        private object reactingObject { get; }
+        private readonly object _reactingObject;
+        private readonly string _rootPath;
 
-        public UcServer(int port, object reactingObject, IFormatter formatter = null, ILogger logger = null, bool useCompression = false)
+        public UcServer(int port, object reactingObject, string rootPath, IFormatter formatter = null, ILogger logger = null, bool useCompression = false)
             : base(new IPEndPoint(IPAddress.Any, port), formatter, logger, useCompression)
         {
-            this.reactingObject = reactingObject;
+            _reactingObject = reactingObject;
+            _rootPath = rootPath;
         }
 
         protected override UCServerConnection createInstance(TcpClient client)
         {
-            var c = new UCServerConnection(client, reactingObject, Formatter, Logger, UseCompression);
+            var c = new UCServerConnection(client, _reactingObject, _rootPath, Formatter, Logger, UseCompression);
             c.ObjectReceived += C_ObjectReceived;
             return c;
         }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.Serialization;
+using OELib.FileExchange;
 using OELib.LibraryBase;
 using OELib.ObjectTunnel;
 using OELib.PokingConnection;
@@ -9,12 +10,16 @@ namespace OELib.UniversalConnection
     public class UCClientConnection : ReconnectingClientSideConnection, IPokingConnection, IObjectTunnelConnection
     {
         public Reactor Reactor { get; }
+        public FileExchangeManager FileManager { get; }
 
-        public UCClientConnection(object reactingObject, IFormatter customFormatter = null, ILogger logger = null,
+        public UCClientConnection(object reactingObject, string rootPath, IFormatter customFormatter = null, ILogger logger = null,
             bool useCompression = false)
             : base(customFormatter, logger, useCompression)
         {
-            Reactor = new Reactor(this, reactingObject);
+            if (reactingObject != null)
+                Reactor = new Reactor(this, reactingObject);
+            if (rootPath != null)
+                FileManager = new FileExchangeManager(rootPath, this);
             MessageReceived += ObjectTunnelClientConnection_MessageReceived;
         }
 
