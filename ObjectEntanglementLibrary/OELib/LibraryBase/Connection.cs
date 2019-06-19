@@ -61,7 +61,7 @@ namespace OELib.LibraryBase
             }
         }
 
-        public event EventHandler<Message> MessageRecieved;
+        public event EventHandler<Message> MessageReceived;
 
         private event EventHandler<IControlMessage> controlMessageReceived;
 
@@ -167,7 +167,7 @@ namespace OELib.LibraryBase
 #endif
             if (message != null)
                 if (message is IControlMessage) controlMessageReceived?.Invoke(this, message as IControlMessage);
-                else MessageRecieved?.Invoke(this, message);
+                else MessageReceived?.Invoke(this, message);
         }
 
         protected virtual void readActivity(object sender, int e)
@@ -213,15 +213,15 @@ namespace OELib.LibraryBase
                     messageReceived.Set();
                 }
             };
-            MessageRecieved += handler;
+            MessageReceived += handler;
 
             if (!SendMessage(message))
             {
-                MessageRecieved -= handler;
+                MessageReceived -= handler;
                 return null;
             }
             messageReceived.WaitOne(timeout);
-            MessageRecieved -= handler;
+            MessageReceived -= handler;
             return returnMessage;
         }
 

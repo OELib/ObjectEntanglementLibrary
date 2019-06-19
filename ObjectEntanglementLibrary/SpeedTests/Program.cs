@@ -94,7 +94,7 @@ namespace SpeedTests
                 //Console.WriteLine($"Client connected to the server, server formatter is {server.Formatter}.");
                 go.Set();
                 //e.PingInterval = 10000000;
-                e.MessageRecieved += (se, me) =>
+                e.MessageReceived += (se, me) =>
                 {
                     //Console.WriteLine($"Server got message {me.ToString()}.");
                 };
@@ -102,7 +102,7 @@ namespace SpeedTests
 
             var cro = new ReactingObject();
             var client = new PokingClientConnection(cro, clientFormatter, null, false) { /*PingInterval = 1000000 */};
-            client.MessageRecieved += (se, me) =>
+            client.MessageReceived += (se, me) =>
             {
                 //Console.WriteLine($"Client got a message {me.ToString()}.");
             };

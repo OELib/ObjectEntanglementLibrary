@@ -22,11 +22,11 @@ namespace OELib.ObjectTunnel
         protected override ObjectTunnelServerConnection createInstance(TcpClient client)
         {
             var r = new ObjectTunnelServerConnection(client, Formatter, Logger, UseCompression) { Name = "Server side connection", PingInterval=10000};
-            r.ObjectReceived += R_ObjectRecieved;
+            r.ObjectReceived += R_ObjectReceived;
             return r;
         }
 
-        private void R_ObjectRecieved(object sender, object e)
+        private void R_ObjectReceived(object sender, object e)
         {
             ObjectReceived?.Invoke(sender, e);
         }

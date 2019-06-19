@@ -18,10 +18,10 @@ namespace OELib.ObjectTunnel
         
         protected void hookEvents()
         {
-            MessageRecieved += ObjectTunnelClientConnection_MessageRecieved;
+            MessageReceived += ObjectTunnelClientConnection_MessageReceived;
         }
 
-        private void ObjectTunnelClientConnection_MessageRecieved(object sender, LibraryBase.Messages.Message e)
+        private void ObjectTunnelClientConnection_MessageReceived(object sender, LibraryBase.Messages.Message e)
         {
             if (e is ObjectCarrier carrier) ObjectReceived?.Invoke(this, carrier.Payload);
         }

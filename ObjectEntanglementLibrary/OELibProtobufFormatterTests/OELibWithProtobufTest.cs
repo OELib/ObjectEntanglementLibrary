@@ -80,7 +80,7 @@ namespace OELibProtobufFormatterTests
             var ok = go.WaitOne(500);
             Assert.IsTrue(ok);
             var go2 = new AutoResetEvent(false);
-            client.MessageRecieved += (s, e) =>
+            client.MessageReceived += (s, e) =>
             {
                 if (e is Echo) go2.Set();
             };
@@ -109,7 +109,7 @@ namespace OELibProtobufFormatterTests
             var ok = go.WaitOne(500);
             Assert.IsTrue(ok);
             var go2 = new AutoResetEvent(false);
-            client.MessageRecieved += (s, e) =>
+            client.MessageReceived += (s, e) =>
             {
                 if (e is Echo2) go2.Set();
             };
@@ -138,7 +138,7 @@ namespace OELibProtobufFormatterTests
             var ok = go.WaitOne(500);
             Assert.IsTrue(ok);
             var go2 = new AutoResetEvent(false);
-            client.MessageRecieved += (s, e) =>
+            client.MessageReceived += (s, e) =>
             {
                 if (e is Echo3) go2.Set();
             };
@@ -174,7 +174,7 @@ namespace OELibProtobufFormatterTests
             var go2 = new AutoResetEvent(false);
             var go3 = new AutoResetEvent(false);
             var go4 = new AutoResetEvent(false);
-            client.MessageRecieved += (s, e) =>
+            client.MessageReceived += (s, e) =>
             {
                 if (e is Echo) go2.Set();
                 if (e is Echo2) go3.Set();
@@ -223,7 +223,7 @@ namespace OELibProtobufFormatterTests
             Assert.IsTrue(ok);
             var go2 = new AutoResetEvent(false);
             CallMethod ee = null;
-            client.MessageRecieved += (s, e) =>
+            client.MessageReceived += (s, e) =>
             {
                 ee = e as CallMethod;
                 if (ee != null) go2.Set();
@@ -259,7 +259,7 @@ namespace OELibProtobufFormatterTests
             Assert.IsTrue(ok);
             var go2 = new AutoResetEvent(false);
             CallMethodResponse ee = null;
-            client.MessageRecieved += (s, e) =>
+            client.MessageReceived += (s, e) =>
             {
                 ee = e as CallMethodResponse;
                 if (ee != null) go2.Set();

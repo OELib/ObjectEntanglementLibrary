@@ -11,7 +11,7 @@ namespace OELib.FileTunnel
         public FileTunnelClientConnection(IFormatter customFormatter = null, ILogger logger = null, bool useCompression = false)
             : base(customFormatter, logger, useCompression)
         {
-            MessageRecieved += FileTunnelClientConnection_MessageRecieved;
+            MessageReceived += FileTunnelClientConnection_MessageRecieved;
             Name = "File tunnel client connection.";
             PingInterval = 10000;
         }

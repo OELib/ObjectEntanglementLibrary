@@ -12,12 +12,12 @@ namespace OELib.ObjectTunnel
         public ObjectTunnelClientConnection(IFormatter customFormatter = null, ILogger logger = null, bool useCompression = false)
             : base(customFormatter, logger, useCompression)
         {
-            MessageRecieved += ObjectTunnelClientConnection_MessageRecieved;
+            MessageReceived += ObjectTunnelClientConnection_MessageReceived;
             Name = "Object tunnel client connection.";
             PingInterval = 10000;
         }
 
-        private void ObjectTunnelClientConnection_MessageRecieved(object sender, LibraryBase.Messages.Message e)
+        private void ObjectTunnelClientConnection_MessageReceived(object sender, LibraryBase.Messages.Message e)
         {
             if (e is ObjectCarrier carrier) ObjectReceived?.Invoke(this, carrier.Payload);
         }
