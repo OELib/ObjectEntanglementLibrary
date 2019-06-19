@@ -2,9 +2,9 @@
 <package >
   <metadata>
     <id>OELib</id>
-    <version>1.3.2-beta</version>
+    <version>1.4.0-beta</version>
     <title>OELib</title>
-    <authors>Erik A, Dean D</authors>
+    <authors>Erik A, Dean D, Antti R</authors>
     <owners></owners>
     <description>
       Object Entanglement Library is a communication platform for simple method calls and property set/get between .Net applications.
