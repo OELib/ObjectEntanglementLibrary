@@ -10,7 +10,7 @@ namespace OELib.UniversalConnection
 {
     public class UCServerConnection : ServerSideConnection, IPokingConnection, IObjectTunnelConnection
     {
-        public FileExchangeManager FileManager { get; }
+        public FileExchangeManager FileManager { get; protected set; }
         public Reactor Reactor { get; }
 
         public UCServerConnection(TcpClient client, object reactingObject, string rootPath, IFormatter formatter = null, ILogger logger = null, bool useCompression = false)
@@ -19,13 +19,15 @@ namespace OELib.UniversalConnection
             if (reactingObject != null)
                 Reactor = new Reactor(this, reactingObject);
             MessageReceived += ObjectTunnelClientConnection_MessageReceived;
-            if (Start(client))
+            Started += (_, __) =>
             {
                 Reactor?.Start();
                 if (rootPath != null)
                     FileManager = new FileExchangeManager(rootPath, this);
-            }
-            else throw new Exception("Server connection failed.");
+            };
+            var ok = Start(client);
+            if (!ok)
+                throw new Exception("Server connection failed.");
         }
 
 

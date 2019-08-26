@@ -21,13 +21,8 @@ namespace OELib.UniversalConnection
             if (rootPath != null)
                 FileManager = new FileExchangeManager(rootPath, this);
             MessageReceived += ObjectTunnelClientConnection_MessageReceived;
-        }
-
-        public override bool Start(string IpAddress, int port)
-        {
-            var success = base.Start(IpAddress, port);
-            if (success) Reactor.Start();
-            return success;
+            this.Started += (_, __) =>
+                Reactor.Start();
         }
 
         public event EventHandler<object> ObjectReceived;
