@@ -57,6 +57,7 @@
     <Compile Include="PriorityQueueTest.cs" />
     <Compile Include="ActorTests.cs" />
     <Compile Include="ObjectTunnelTest.cs" />
+    <Compile Include="UCTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OELib\OELib.csproj">
