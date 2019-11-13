@@ -23,20 +23,19 @@ namespace OELib.LibraryBase
             _listener = new TcpListener(localEndPoint);
         }
 
-        
 
-
-        private Actor connectionManager { get; } = new Actor();
+        private readonly Actor _eventDriver = new Actor();
+        private readonly Actor _connectionManager = new Actor();
 
         // ReSharper disable once InconsistentNaming
-        protected List<T> _connections { get; } = new List<T>();
+        protected List<T> _connections { get; } = new List<T>(); //todo: replace this and the actor with a concurrent collection.
 
         public List<T> Connections
         {
             get
             {
                 var connections = new List<T>();
-                connectionManager.PostWait(() => { _connections.ForEach(c => connections.Add(c)); });
+                _connectionManager.PostWait(() => { _connections.ForEach(c => connections.Add(c)); });
                 return connections;
             }
         }
@@ -72,16 +71,16 @@ namespace OELib.LibraryBase
             }
             var connection = createInstance(client);
 
-            connectionManager.PostWait(() =>
+            _connectionManager.PostWait(() =>
             {
                 _connections.Add(connection);
-                ClientConnected?.Invoke(this, connection); //, null, null);
+                _eventDriver.Post(()=> ClientConnected?.Invoke(this, connection));
             });
 
             connection.Stopped += (s, e) =>
             {
-                connectionManager.PostWait(() => _connections.Remove(s as T));
-                ClientDisconnected?.Invoke(this, new Tuple<T, Exception>(s as T, e)); //, null, null);
+                _connectionManager.PostWait(() => _connections.Remove(s as T));
+                _eventDriver.Post(() => ClientDisconnected?.Invoke(this, new Tuple<T, Exception>(s as T, e)));
             };
             try
             {
