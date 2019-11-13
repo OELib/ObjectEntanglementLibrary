@@ -71,6 +71,44 @@ namespace OELibTests
             };
             client.Start("127.0.0.1", _port);
             Assert.IsTrue(ok.WaitOne(50));
+            client.Stop();
+            server.Stop();
         }
+
+
+        /// <summary>
+        /// This tests a that the client connected event does not produce a deadlock
+        /// </summary>
+        [TestMethod]
+        public void ClientConnectedEventTest()
+        {
+            var sReactor = new ServerReactor();
+            var cReactor = new ClientReactor();
+            var server = new UcServer(_port, sReactor, _serverDir);
+            server.Start();
+            var serverConnectionEvent = new AutoResetEvent(false);
+            server.ClientConnected += (_, __) =>
+            {
+                var numberOfClients = server.Connections.Count; // potential bug here
+                Assert.AreEqual(1, numberOfClients);
+
+                serverConnectionEvent.Set();
+            };
+            var client = new UCClientConnection(cReactor, _clientDir);
+            var ok = new AutoResetEvent(false);
+            client.Started += (_, __) => {
+                client.Reactor.CallRemoteMethod("TestMethod");
+                ok.Set();
+            };
+            client.Start("127.0.0.1", _port);
+            Assert.IsTrue(ok.WaitOne(50));
+            Assert.IsTrue(serverConnectionEvent.WaitOne(50));
+            client.Stop();
+            server.Stop();
+        }
+
+
+
+
     }
 }
