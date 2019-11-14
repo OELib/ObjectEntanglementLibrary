@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>OELib</id>
-    <version>1.4.0-beta</version>
+    <version>1.5.0-beta</version>
     <title>OELib</title>
     <authors>Erik A, Dean D, Antti R</authors>
     <owners></owners>
@@ -19,7 +19,7 @@
     <iconUrl>https://nuget.org/Content/Images/packageDefaultIcon-50x50.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://opensource.org/licenses/MIT</licenseUrl>
-    <copyright>Copyright 2016</copyright>
+    <copyright>Copyright 2016-2019</copyright>
     <dependencies>
     </dependencies>
     <references></references>
