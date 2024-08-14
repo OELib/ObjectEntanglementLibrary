@@ -106,7 +106,7 @@ namespace SpeedTests
             {
                 //Console.WriteLine($"Client got a message {me.ToString()}.");
             };
-            
+            object a_; 
             
             client.Start("127.0.0.1", port);
             var ok = go.WaitOne(500);
@@ -116,7 +116,7 @@ namespace SpeedTests
                 for (int itteration = 0; itteration < 100; itteration++)
                 {
                     var a = client.Reactor.CallRemoteMethod(MethodName, cro.bpa);
-                    a = a;
+                    a_ = a;
                 }
                 sw.Stop();
                 Console.WriteLine($"{formatterName} serialization took {sw.ElapsedMilliseconds} ms to complete info transfer.");
@@ -149,13 +149,14 @@ namespace SpeedTests
             client.Start("127.0.0.1", port);
             Thread.Sleep(100);
             var ok = go.WaitOne(500);
+            object a_;
             if (ok)
             {
                 var sw = Stopwatch.StartNew();
                 for (int itteration = 0; itteration < 100; itteration++)
                 {
                     var a = client.Reactor.CallRemoteMethod(MethodName, cro.ppa);
-                    a = a;
+                    a_ = a;
                 }
                 sw.Stop();
                 Console.WriteLine($"{formatterName} serialization took {sw.ElapsedMilliseconds} ms to complete info transfer.");
